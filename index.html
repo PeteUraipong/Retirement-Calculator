@@ -352,9 +352,19 @@ const TH_M = ["มกราคม","กุมภาพันธ์","มีน�
 DEF.startMonth = new Date().getMonth()+1;
 DEF.retMonth = 12;
 DEF.mode = "simple";
+DEF.ver = 2;
 DEF.workMonth = 1;
 let S = JSON.parse(JSON.stringify(DEF));
-try{ const raw = localStorage.getItem("retirePlanV1"); if(raw){ S = Object.assign(S, JSON.parse(raw)); } }catch(e){}
+try{
+  const raw = localStorage.getItem("retirePlanV1");
+  if(raw){
+    const saved = JSON.parse(raw);
+    // data saved before the new defaults: reset item 21 to 0 and start in simple mode
+    if(!(saved.ver >= 2)){ ["car","house","med","travel","travelYears"].forEach(k => saved[k] = 0); saved.mode = "simple"; }
+    S = Object.assign(S, saved);
+  }
+}catch(e){}
+S.ver = 2;
 function save(){ try{ localStorage.setItem("retirePlanV1", JSON.stringify(S)); }catch(e){} }
 
 const fmt = v => { const r=Math.round(v); return (r===0?0:r).toLocaleString("th-TH"); };
