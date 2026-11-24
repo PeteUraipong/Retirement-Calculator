@@ -279,17 +279,8 @@ button.del{padding:4px 10px!important;background:transparent;border:1px solid va
 <div class="wrap">
   <header>
     <h1>จัดพอร์ต PVD แล้ววางแผนเกษียณ: ต้องมีเงินเท่าไร และต้องลงทุนเดือนละเท่าไร</h1>
-    <p class="lede">เลือกรูปแบบการวางแผน แล้วจัดสัดส่วนสินทรัพย์ในกองทุนสำรองเลี้ยงชีพ (ส่วนที่ 1) และกรอกข้อมูลแผนเกษียณ (ส่วนที่ 2) ทุกช่องแก้ได้ แล้วกด “คำนวณ” ผลจะแสดงด้านล่าง ตัวเลขที่กรอกไว้จะถูกจำไว้ในเบราว์เซอร์นี้ ค่าที่ใส่มาให้เป็นตัวอย่าง</p>
+    <p class="lede">จัดสัดส่วนสินทรัพย์ในกองทุนสำรองเลี้ยงชีพ (ส่วนที่ 1) และกรอกข้อมูลแผนเกษียณ (ส่วนที่ 2) ทุกช่องแก้ได้ แล้วกด “คำนวณ” ผลจะแสดงด้านล่าง ตัวเลขที่กรอกไว้จะถูกจำไว้ในเบราว์เซอร์นี้ ค่าที่ใส่มาให้เป็นตัวอย่าง</p>
   </header>
-
-  <section class="mode" aria-label="เลือกรูปแบบการวางแผน">
-    <h2>รูปแบบการวางแผน</h2>
-    <div class="seg-ctl" role="radiogroup">
-      <label><input type="radio" name="mode" id="modeSimple" value="simple"><span>แบบง่าย</span></label>
-      <label><input type="radio" name="mode" id="modeFull" value="full"><span>แบบละเอียด</span></label>
-    </div>
-    <p id="modeHint"></p>
-  </section>
 
   <h2 class="part-h">ส่วนที่ 1 · จัดพอร์ตกองทุนสำรองเลี้ยงชีพ</h2>
   <section class="pf" id="port">
@@ -325,6 +316,14 @@ button.del{padding:4px 10px!important;background:transparent;border:1px solid va
   </section>
 
   <h2 class="part-h">ส่วนที่ 2 · แผนเกษียณ</h2>
+  <section class="mode" aria-label="เลือกรูปแบบการวางแผน">
+    <h2>รูปแบบการวางแผน</h2>
+    <div class="seg-ctl" role="radiogroup">
+      <label><input type="radio" name="mode" id="modeSimple" value="simple"><span>แบบง่าย</span></label>
+      <label><input type="radio" name="mode" id="modeFull" value="full"><span>แบบละเอียด</span></label>
+    </div>
+    <p id="modeHint"></p>
+  </section>
   <form id="f" class="panels" autocomplete="off">
     <section class="panel">
       <h3>อายุ ค่าใช้จ่าย และช่วงเวลา <span class="tag">ข้อ 1–7</span></h3>
