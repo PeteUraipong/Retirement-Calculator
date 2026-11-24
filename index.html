@@ -231,10 +231,10 @@ button{border-radius:999px!important}
   <form id="f" class="panels" autocomplete="off">
     <section class="panel">
       <h3>อายุ ค่าใช้จ่าย และช่วงเวลา <span class="tag">ข้อ 1–7</span></h3>
-      <div class="field"><label for="age">1. อายุปัจจุบัน</label><div class="inbox"><input id="age" type="number" step="1" min="0"><span class="u">ปี</span></div></div>
+      <div class="field"><label for="age">1. อายุปัจจุบัน</label><div class="inbox"><input id="age" type="number" step="1" min="0" placeholder="เช่น 35"><span class="u">ปี</span></div></div>
       <div class="field"><label for="retAge">2. อายุที่คาดว่าเกษียณ</label><div class="inbox"><input id="retAge" type="number" step="1"><span class="u">ปี</span></div></div>
       <div class="field"><label for="lifeAge">3. อายุที่อยู่ใช้เงินถึง</label><div class="inbox"><input id="lifeAge" type="number" step="1"><span class="u">ปี</span></div></div>
-      <div class="field"><label for="exp">4. ค่าใช้จ่ายหลังเกษียณต่อเดือน<small>คิดเป็นราคาวันนี้</small></label><div class="inbox"><input id="exp" type="text" inputmode="decimal" data-money="1"><span class="u">บาท</span></div></div>
+      <div class="field"><label for="exp">4. ค่าใช้จ่ายหลังเกษียณต่อเดือน<small>คิดเป็นราคาวันนี้</small></label><div class="inbox"><input id="exp" type="text" inputmode="decimal" data-money="1" placeholder="เช่น 20,000"><span class="u">บาท</span></div></div>
       <div class="field"><label for="inf">5. อัตราเงินเฟ้อ</label><div class="inbox"><input id="inf" type="number" step="0.1"><span class="u">%/ปี</span></div></div>
       <div class="field"><label for="startMonth">6. เดือนที่เริ่มวางแผนการเงิน<small>ใช้คิดผลตอบแทนตามสัดส่วนของปีแรก</small></label><div class="inbox"><select id="startMonth" style="flex:1;border:0;background:transparent;color:var(--ink);font:inherit;padding:7px 8px"></select></div></div>
       <div class="field"><label for="retMonth">7. เดือนที่เกษียณ (สิ้นเดือน)<small>ในปีที่อายุครบตามข้อ 2</small></label><div class="inbox"><select id="retMonth" style="flex:1;border:0;background:transparent;color:var(--ink);font:inherit;padding:7px 8px"></select></div></div>
@@ -243,7 +243,7 @@ button{border-radius:999px!important}
     <section class="panel">
       <h3>เงินเดือนและกองทุนสำรองเลี้ยงชีพ <span class="tag">ข้อ 8–14</span></h3>
       <div class="field"><label for="fund0">8. เงินกองทุนในปัจจุบัน<small>เว้นว่าง = 0</small></label><div class="inbox"><input id="fund0" type="text" inputmode="decimal" data-money="1" placeholder="0"><span class="u">บาท</span></div></div>
-      <div class="field"><label for="salary">9. เงินเดือนปัจจุบัน</label><div class="inbox"><input id="salary" type="text" inputmode="decimal" data-money="1"><span class="u">บาท</span></div></div>
+      <div class="field"><label for="salary">9. เงินเดือนปัจจุบัน</label><div class="inbox"><input id="salary" type="text" inputmode="decimal" data-money="1" placeholder="เช่น 30,000"><span class="u">บาท</span></div></div>
       <div class="field"><label for="salInc">10. อัตราขึ้นเงินเดือน</label><div class="inbox"><input id="salInc" type="number" step="0.1"><span class="u">%/ปี</span></div></div>
       <div class="field"><label for="cap">11. เพดานเงินเดือน<small>เว้นว่าง = ไม่มีเพดาน</small></label><div class="inbox"><input id="cap" type="text" inputmode="decimal" data-money="1" placeholder="ไม่มี"><span class="u">บาท</span></div></div>
       <div class="field"><label for="empRate">12. อัตราเงินสะสม (ลูกจ้าง)</label><div class="inbox"><input id="empRate" type="number" step="0.5"><span class="u">%</span></div></div>
@@ -325,8 +325,8 @@ button{border-radius:999px!important}
 </div>
 
 <script>
-const DEF = {age:30,retAge:60,lifeAge:85,exp:10000,inf:3,rPre:5,rPvd:5,rPost:3,fund0:"",salary:30000,salInc:3,workYear:new Date().getFullYear()+543-5,cap:"",empRate:3,
-  invest0:0,lumpRet:0,pension:0,car:500000,house:500000,med:2000000,travel:100000,travelYears:10,lumpInfl:false,
+const DEF = {age:"",retAge:60,lifeAge:85,exp:"",inf:3,rPre:5,rPvd:5,rPost:3,fund0:"",salary:"",salInc:3,workYear:new Date().getFullYear()+543-5,cap:"",empRate:3,
+  invest0:0,lumpRet:0,pension:0,car:0,house:0,med:0,travel:0,travelYears:0,lumpInfl:false,
   erMode:"step",fixedRate:5,tiers:[{limit:10,rate:6,add:true},{limit:20,rate:7,add:true},{limit:30,rate:8,add:false}],reqRet:null};
 const IDS = ["age","retAge","lifeAge","exp","inf","rPre","rPvd","rPost","fund0","salary","salInc","workYear","cap","empRate","invest0","lumpRet","pension","car","house","med","travel","travelYears"];
 const $ = id => document.getElementById(id);
@@ -426,6 +426,8 @@ function updateSvcHint(){
 function pvGrow(pmt,g,r,N){ let s=0; for(let t=0;t<N;t++) s += pmt*Math.pow(1+g,t)/Math.pow(1+r,t); return s; }
 
 function compute(){
+  const miss = [["age","ข้อ 1 อายุปัจจุบัน"],["exp","ข้อ 4 ค่าใช้จ่ายต่อเดือน"],["salary","ข้อ 9 เงินเดือนปัจจุบัน"]].filter(([k]) => String(S[k]??"").trim()==="").map(x=>x[1]);
+  if(miss.length) return {err:"กรอก " + miss.join(", ") + " แล้วกด คำนวณ"};
   const p = {}; IDS.forEach(id => p[id]=num(S[id]));
   const inf=p.inf/100, rPre=p.rPre/100, rPvd=p.rPvd/100, rPost=p.rPost/100, g=p.salInc/100, c=p.empRate/100;
   if(p.retAge <= p.age) return {err:"อายุเกษียณต้องมากกว่าอายุปัจจุบัน"};
@@ -514,9 +516,17 @@ function compute(){
 }
 
 let R = null;
-function showResults(){
-  const r = compute(); $("err").textContent = r.err || "";
-  if(r.err){ return; }
+function showResults(quiet){
+  const r = compute(); $("err").textContent = (r.err && !quiet) ? r.err : "";
+  if(r.err){
+    R = null;
+    ["r1","r2","r3","r4","r4b","r5","r6"].forEach(id => $(id).textContent = "–");
+    ["r1s","r2s","r3s","r4s","r6s"].forEach(id => $(id).textContent = "");
+    $("gapRow").classList.remove("ok");
+    $("resMeta").textContent = r.err;
+    $("info").hidden = true;
+    return;
+  }
   R = r; updateSvcHint();
   $("resMeta").textContent = `อีก ${r.n} ปีถึงวันเกษียณ • ใช้เงินหลังเกษียณ ${r.N} ปี`;
   $("r1").textContent = fmtB(r.need);
@@ -683,7 +693,7 @@ document.querySelectorAll("input[name=erMode]").forEach(r => r.addEventListener(
 $("calcBtn").addEventListener("click", () => { readForm(); save(); showResults(); $("results").scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth", block:"start"}); });
 $("reqRet").addEventListener("input", e => { S.reqRet = e.target.value; save(); showResults(); });
 $("infoBtn").addEventListener("click", () => { readForm(); showResults(); if($("err").textContent) return; $("info").hidden=false; renderInfo(); $("info").scrollIntoView({behavior:"smooth",block:"start"}); });
-$("resetBtn").addEventListener("click", () => { S = JSON.parse(JSON.stringify(DEF)); save(); loadForm(); showResults(); });
+$("resetBtn").addEventListener("click", () => { S = JSON.parse(JSON.stringify(DEF)); save(); loadForm(); showResults(true); });
 document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => {
   document.querySelectorAll(".tabs button").forEach(x => x.setAttribute("aria-selected", x===b?"true":"false"));
   document.querySelectorAll(".page").forEach(p => p.classList.toggle("on", p.id===b.dataset.p));
@@ -695,7 +705,7 @@ matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", () => { 
   $(id).innerHTML = TH_M.map((m,i)=>`<option value="${i+1}">${m}</option>`).join("");
   $(id).addEventListener("change", () => { readForm(); save(); updateSvcHint(); });
 });
-loadForm(); showResults();
+loadForm(); showResults(true);
 if("serviceWorker" in navigator){ window.addEventListener("load", () => { navigator.serviceWorker.register("sw.js").catch(()=>{}); }); }
 </script>
 </body>
