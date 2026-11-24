@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#e2d9fb">
+<meta name="description" content="คำนวณเงินที่ต้องมีวันเกษียณ และเงินที่ควรลงทุนต่อเดือน">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="แผนเกษียณ">
+<title>จัดพอร์ต PVD และวางแผนเกษียณ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* pastel theme, single light world: mint · peach · lavender · sky · butter on a soft lilac-cream ground */
+  --bg:#f8f5fc; --surface:#ffffff; --ink:#3b3552; --muted:#7c7694; --line:#ebe4f3;
+  --jade:#3f9b88; --jade-soft:#e0f4ee; --amber:#e07f55; --amber-soft:#fdebe1;
+  --sea:#7db4e3; --plum:#a796e2; --sand:#f5cf7f;
+  --good:#3f9b88; --bad:#dc6478; --bad-soft:#fde5ea;
+  --mint:#bfe8dc; --peach:#ffd9c7; --lav:#e2d9fb; --sky:#d3e8fb; --butter:#fff0c4;
+  --shadow:0 6px 24px rgba(120,100,170,.10);
+  --f-display:"Anuphan","IBM Plex Sans Thai",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans Thai",system-ui,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:radial-gradient(900px 500px at 0% 0%,var(--lav) 0,transparent 60%),radial-gradient(800px 500px at 100% 10%,var(--peach) 0,transparent 55%),radial-gradient(900px 600px at 50% 100%,var(--mint) 0,transparent 60%) fixed,var(--bg);min-height:100%;color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55}
+.wrap{max-width:1080px;margin:0 auto;padding:calc(24px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) calc(64px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left));display:flex;flex-direction:column;gap:20px}
+h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance;line-height:1.25}
+h1{font-size:28px}
+h2{font-size:20px}
+h3{font-size:16px}
+.lede{color:var(--muted);margin:4px 0 0;max-width:65ch}
+.num{font-variant-numeric:tabular-nums}
+
+.panels{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);border-top:6px solid var(--pc,var(--mint));padding:16px 18px;display:flex;flex-direction:column;gap:10px}
+.panel h3{display:flex;align-items:center;gap:8px;color:var(--jade)}
+.panel h3 .tag{font-family:var(--f-body);font-size:12px;font-weight:600;background:var(--jade-soft);color:var(--jade);padding:1px 8px;border-radius:99px}
+.field{display:grid;grid-template-columns:1fr 150px;align-items:center;gap:10px}
+.field label{font-size:14px}
+.field label small{display:block;color:var(--muted);font-size:12px}
+.inbox{display:flex;align-items:center;border:1px solid var(--line);border-radius:8px;background:var(--bg);overflow:hidden}
+.inbox:focus-within{border-color:var(--jade);box-shadow:0 0 0 3px var(--jade-soft)}
+.inbox input{flex:1;min-width:0;border:0;background:transparent;color:var(--ink);font:inherit;font-variant-numeric:tabular-nums;padding:7px 8px;text-align:right}
+.inbox input:focus{outline:none}
+.inbox .u{padding:0 9px 0 2px;color:var(--muted);font-size:13px;white-space:nowrap}
+.inbox.sm{width:96px;display:inline-flex}
+.sub{border-top:1px dashed var(--line);padding-top:10px;display:flex;flex-direction:column;gap:10px}
+.radios{display:flex;gap:16px;flex-wrap:wrap}
+.radios label,.chk{display:inline-flex;align-items:center;gap:6px;font-size:14px;cursor:pointer}
+input[type=radio],input[type=checkbox]{accent-color:var(--jade);width:16px;height:16px}
+.tier{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;padding:8px 10px;border-radius:8px;background:var(--jade-soft);font-size:14px}
+.tier .chk{margin-left:auto;font-size:13px;color:var(--muted)}
+
+.actions{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.mode{background:var(--surface);border-radius:20px;box-shadow:var(--shadow);border:1px solid var(--line);padding:14px 18px;display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px}
+.mode h2{font-size:17px}
+.seg-ctl{display:inline-flex;background:var(--lav);border-radius:999px;padding:4px;gap:4px}
+.seg-ctl label{position:relative;cursor:pointer}
+.seg-ctl input{position:absolute;opacity:0;pointer-events:none}
+.seg-ctl span{display:block;padding:8px 20px;border-radius:999px;font-weight:600;color:var(--muted)}
+.seg-ctl input:checked + span{background:var(--surface);color:var(--jade);box-shadow:0 2px 8px rgba(120,100,170,.18)}
+.seg-ctl input:focus-visible + span{outline:2px solid var(--amber);outline-offset:2px}
+.mode p{margin:0;color:var(--muted);font-size:13.5px;flex:1 1 260px}
+button{font:inherit;cursor:pointer;border-radius:10px;padding:10px 22px;border:1px solid transparent;font-weight:600}
+button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.btn-main{background:var(--jade);color:#fff}
+:root[data-theme="dark"] .btn-main{color:#0d1714}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn-main{color:#0d1714}}
+.btn-main:hover{filter:brightness(1.08)}
+.btn-alt{background:var(--surface);color:var(--jade);border-color:var(--jade)}
+.btn-alt:hover{background:var(--jade-soft)}
+.err{color:var(--bad);font-weight:500}
+
+/* results ledger */
+.results{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.results header{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:baseline}
+.results header p{margin:0;color:var(--muted);font-size:13px}
+.row{display:grid;grid-template-columns:36px 1fr auto;gap:12px;align-items:center;padding:12px 18px;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}
+.row .n{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:600;font-size:13px;background:var(--jade-soft);color:var(--jade)}
+.row .t small{display:block;color:var(--muted);font-size:12.5px}
+.row .v{font-family:var(--f-display);font-size:19px;font-weight:600;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.row.need .n{background:var(--amber-soft);color:var(--amber)}
+.row.need .v{color:var(--amber)}
+.row.gap{background:var(--bad-soft)}
+.row.gap .n{background:var(--bad);color:#fff}
+.row.gap .v{color:var(--bad)}
+.row.gap.ok{background:var(--jade-soft)}
+.row.gap.ok .n{background:var(--good)}
+.row.gap.ok .v{color:var(--good)}
+.row.save .v{font-size:24px;color:var(--jade)}
+
+
+/* infographic */
+.info{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:16px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:10px}
+.tabs button{background:transparent;color:var(--muted);padding:7px 14px;border-radius:99px;font-weight:500}
+.tabs button[aria-selected="true"]{background:var(--jade);color:var(--surface)}
+.page{display:none;flex-direction:column;gap:16px}
+.page.on{display:flex}
+.eyebrow{font-size:12px;letter-spacing:.06em;color:var(--muted);font-weight:600}
+.chart{width:100%;overflow-x:auto}
+.chart svg{display:block;min-width:620px;width:100%;height:auto}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.miles{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.mile{border-left:4px solid var(--jade);background:var(--bg);border-radius:0 10px 10px 0;padding:10px 12px;font-size:13.5px}
+.mile.ret{border-color:var(--amber)}
+.mile.end{border-color:var(--plum)}
+.mile b{font-family:var(--f-display);font-size:15px;display:block}
+.mile .age{font-size:12px;color:var(--muted)}
+.mile dl{margin:6px 0 0;display:grid;grid-template-columns:1fr auto;gap:2px 10px}
+.mile dd{margin:0;text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
+
+/* summary canvas */
+.strip{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);border-radius:10px;padding:6px 12px;background:var(--bg);font-size:13px}
+.chip b{font-family:var(--f-display);font-size:16px;margin-left:4px;font-variant-numeric:tabular-nums}
+.canvas{display:grid;grid-template-columns:repeat(5,minmax(170px,1fr));gap:10px;overflow-x:auto}
+.col{border:1px solid var(--line);border-radius:12px;display:flex;flex-direction:column;background:var(--bg);min-width:170px}
+.col .hd{padding:10px 12px;border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:flex-start}
+.col .hd .k{flex:none;width:24px;height:24px;border-radius:50%;background:var(--jade);color:var(--surface);display:grid;place-items:center;font-size:12px;font-weight:700}
+.col .hd h3{font-size:14.5px}
+.col .hd small{display:block;color:var(--muted);font-size:11.5px;font-weight:400;font-family:var(--f-body)}
+.col ul{list-style:none;margin:0;padding:10px 12px;display:flex;flex-direction:column;gap:7px;flex:1;font-size:13px}
+.col li{display:flex;justify-content:space-between;gap:8px}
+.col li span:last-child{font-variant-numeric:tabular-nums;font-weight:500;text-align:right}
+.col li.op{color:var(--muted);font-size:12px}
+.col .tot{margin:0 10px 10px;padding:8px 10px;border-radius:8px;background:var(--surface);border:1px solid var(--line);display:flex;justify-content:space-between;align-items:baseline;gap:6px;font-size:12.5px}
+.col .tot b{font-family:var(--f-display);font-size:17px;font-variant-numeric:tabular-nums}
+.col.a .hd .k{background:var(--amber)}
+.col.a .tot{border-color:var(--amber);background:var(--amber-soft)}
+.col.g .hd .k{background:var(--bad)}
+.col.g .tot{border-color:var(--bad);background:var(--bad-soft)}
+.col.g.ok .hd .k{background:var(--good)}
+.col.g.ok .tot{border-color:var(--good);background:var(--jade-soft)}
+
+/* equation */
+.eq{display:flex;flex-direction:column;gap:22px}
+.bar-block h3{margin-bottom:8px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.bar-block h3 span{font-variant-numeric:tabular-nums}
+.bar{display:flex;height:58px;border-radius:10px;overflow:hidden;background:var(--bg);border:1px solid var(--line)}
+.seg{display:flex;flex-direction:column;justify-content:center;padding:0 10px;color:#fff;font-size:12.5px;line-height:1.3;min-width:0;overflow:hidden;white-space:nowrap}
+.seg b{font-variant-numeric:tabular-nums;font-size:13.5px}
+.seg.hatch{background:repeating-linear-gradient(135deg,var(--bad-soft) 0 8px,transparent 8px 16px);color:var(--bad);border-left:2px dashed var(--bad)}
+.keys{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:8px;font-size:13px;color:var(--muted)}
+.keys span{display:inline-flex;align-items:center;gap:6px}
+.keys i{width:11px;height:11px;border-radius:3px;display:inline-block}
+.formula{display:flex;flex-wrap:wrap;align-items:stretch;gap:10px}
+.term{flex:1 1 150px;border-radius:12px;padding:12px 14px;border:1px solid var(--line);background:var(--bg);display:flex;flex-direction:column;gap:2px}
+.term small{color:var(--muted);font-size:12px}
+.term b{font-family:var(--f-display);font-size:20px;font-variant-numeric:tabular-nums}
+.term.a{border-color:var(--amber);background:var(--amber-soft)}
+.term.a b{color:var(--amber)}
+.term.b{border-color:var(--jade);background:var(--jade-soft)}
+.term.b b{color:var(--jade)}
+.term.g{border-color:var(--bad);background:var(--bad-soft)}
+.term.g b{color:var(--bad)}
+.term.g.ok{border-color:var(--good);background:var(--jade-soft)}
+.term.g.ok b{color:var(--good)}
+.op-sign{align-self:center;font-family:var(--f-display);font-size:24px;color:var(--muted)}
+.callout{border-radius:12px;background:var(--jade);color:var(--surface);padding:14px 18px;display:flex;flex-wrap:wrap;gap:6px 16px;align-items:baseline;justify-content:space-between}
+.callout b{font-family:var(--f-display);font-size:24px;font-variant-numeric:tabular-nums}
+.hero{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.hero div{border-radius:12px;padding:10px 14px;background:var(--bg);border:1px solid var(--line);display:flex;flex-direction:column}
+.hero small{color:var(--muted);font-size:12.5px}
+.hero b{font-family:var(--f-display);font-size:20px;font-variant-numeric:tabular-nums}
+.hero .h-a b{color:var(--amber)} .hero .h-b b{color:var(--jade)} .hero .h-g b{color:var(--bad)} .hero .h-g.ok b{color:var(--good)}
+.hero .h-s{background:var(--jade);border-color:var(--jade)} .hero .h-s small,.hero .h-s b{color:var(--surface)}
+@media (max-width:760px){.hero{grid-template-columns:1fr 1fr}}
+.note{font-size:12.5px;color:var(--muted);max-width:80ch}
+
+.panel:nth-child(1){--pc:var(--mint)} .panel:nth-child(2){--pc:var(--peach)} .panel:nth-child(3){--pc:var(--lav)} .panel:nth-child(4){--pc:var(--sky)} .panel:nth-child(5){--pc:var(--butter)}
+.panel h3 .tag{background:var(--pc,var(--jade-soft))!important;color:var(--ink)!important}
+.wrap > header{background:linear-gradient(120deg,var(--mint),var(--sky) 45%,var(--lav) 75%,var(--peach));border-radius:24px;padding:22px 24px;box-shadow:var(--shadow)}
+.wrap > header .lede{color:var(--ink);opacity:.8}
+.results,.info{border-radius:22px!important;box-shadow:var(--shadow)}
+.results header{background:linear-gradient(90deg,var(--lav),var(--sky))}
+.tier{background:var(--peach)!important;border-radius:12px!important}
+.inbox{border-radius:12px!important;background:#fcfaff!important}
+button{border-radius:999px!important}
+.btn-main{background:linear-gradient(120deg,#5fb8a3,#3f9b88)!important;color:#fff!important;box-shadow:0 4px 14px rgba(63,155,136,.3)}
+.btn-alt{background:var(--surface)!important}
+.row .n{background:var(--lav)!important;color:var(--ink)!important}
+.row.need .n{background:var(--peach)!important}
+.row.gap .n{background:var(--bad)!important;color:#fff!important}
+.row.gap.ok .n{background:var(--good)!important}
+.hero div{border-radius:18px!important}
+.hero .h-a{background:var(--peach)!important;border-color:transparent!important}
+.hero .h-b{background:var(--mint)!important;border-color:transparent!important}
+.hero .h-g{background:var(--bad-soft)!important;border-color:transparent!important}
+.hero .h-g.ok{background:var(--jade-soft)!important}
+.hero .h-s{background:linear-gradient(120deg,var(--lav),var(--sky))!important;border-color:transparent!important}
+.hero .h-s small,.hero .h-s b{color:var(--ink)!important}
+.col{border-radius:18px!important;background:#fcfaff!important}
+.col .hd{background:var(--sky);border-radius:18px 18px 0 0}
+.col:nth-child(1) .hd{background:var(--mint)} .col:nth-child(2) .hd{background:var(--sky)} .col:nth-child(3) .hd{background:var(--peach)} .col:nth-child(4) .hd{background:var(--lav)} .col:nth-child(5) .hd{background:var(--butter)}
+.chip{border-radius:999px!important;background:var(--lav)!important;border-color:transparent!important}
+.chip:nth-child(3n+2){background:var(--mint)!important} .chip:nth-child(3n){background:var(--peach)!important}
+.mile{border-radius:0 16px 16px 0!important;background:#fcfaff!important}
+.callout{background:linear-gradient(120deg,var(--mint),var(--sky),var(--lav))!important;color:var(--ink)!important;border-radius:18px!important}
+.term{border-radius:18px!important}
+.bar{border-radius:16px!important}
+.seg{color:var(--ink)!important}
+.seg.hatch{color:var(--bad)!important}
+.tabs button[aria-selected="true"]{background:linear-gradient(120deg,#5fb8a3,#3f9b88)!important;color:#fff!important}
+@media (max-width:760px){
+  .canvas{grid-template-columns:1fr;overflow:visible}
+  .col{min-width:0}
+  .col + .col{position:relative}
+  .col + .col::before{content:"↓";position:absolute;top:-18px;left:50%;transform:translateX(-50%);color:var(--muted);font-size:14px}
+  .canvas{gap:22px}
+}
+@media (max-width:520px){
+  .field{grid-template-columns:1fr 130px}
+  .row{grid-template-columns:30px 1fr;}
+  .row .v{grid-column:2;text-align:left}
+  h1{font-size:23px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* part 1: portfolio mix (same pastel world as the plan below) */
+.part-h{font-family:var(--f-display);font-size:22px;margin:6px 0 -6px}
+.pf{background:var(--surface);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);border-top:6px solid var(--sky);padding:18px 20px;display:flex;flex-direction:column;gap:14px}
+.pf-grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:22px;align-items:start}
+@media(max-width:880px){.pf-grid{grid-template-columns:minmax(0,1fr)}}
+.pf-scroll{overflow-x:auto}
+.at{border-collapse:collapse;width:100%;min-width:620px;font-size:14px}
+.at th{font-size:13px;color:var(--muted);font-weight:600;text-align:right;padding:6px 4px;border-bottom:2px solid var(--line);white-space:nowrap}
+.at th:first-child{text-align:left}
+.at td{padding:5px 4px;border-bottom:1px solid var(--line);vertical-align:middle}
+.at td.c{width:96px}.at td.x{width:40px;text-align:center}
+.nmw{display:flex;align-items:center;gap:8px}
+.sw{width:11px;height:11px;border-radius:3px;display:inline-block;flex:none}
+.pin{display:flex;align-items:center;border:1px solid var(--line);border-radius:12px;background:#fcfaff}
+.pin.w{background:var(--butter)}
+.pin:focus-within,.nmin:focus{border-color:var(--jade);box-shadow:0 0 0 3px var(--jade-soft)}
+.pin input{flex:1;min-width:0;width:100%;border:0;background:transparent;font:inherit;color:var(--ink);padding:7px 2px 7px 8px;text-align:right;font-variant-numeric:tabular-nums}
+.pin input:focus,.nmin:focus{outline:none}
+.pin span{padding-right:8px;color:var(--muted);font-size:12px}
+.pin input.neg{color:var(--bad)}
+.nmin{border:1px solid var(--line);border-radius:12px;background:#fcfaff;font:inherit;padding:7px 8px;width:100%;color:var(--ink)}
+button.del{padding:4px 10px!important;background:transparent;border:1px solid var(--line);color:var(--muted);font-weight:500;line-height:1.2}
+.at tfoot td{font-weight:700;border-bottom:0;border-top:2px solid var(--line);padding-top:8px;font-variant-numeric:tabular-nums}
+.h-avg{color:#3f6fae!important}.h-bad{color:#c5612f!important}.h-cri{color:var(--bad)!important}
+.sc3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.sc3>div{border-radius:18px;padding:12px 14px}
+.sc3 .s-avg{background:var(--sky)}.sc3 .s-bad{background:var(--peach)}.sc3 .s-cri{background:var(--bad-soft)}
+.sc3 span{font-size:13.5px;font-weight:600}
+.sc3 b{font-family:var(--f-display);font-size:clamp(22px,3vw,30px);display:block;line-height:1.2;font-variant-numeric:tabular-nums;white-space:nowrap}
+.sc3 .s-avg b{color:#2f5f9e}.sc3 .s-bad b{color:#c5612f}.sc3 .s-cri b{color:var(--bad)}
+.sc3 small{color:var(--muted);font-size:12px}
+.mix{display:flex;height:20px;border-radius:999px;overflow:hidden;background:var(--bg);border:1px solid var(--line)}
+.mix span{height:100%;transition:width .3s ease}
+.mixl{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12.5px;color:var(--muted)}
+.mixl span{display:inline-flex;align-items:center;gap:6px}
+.rules{display:flex;flex-direction:column}
+.rule{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px dashed var(--line);font-size:14px;cursor:pointer}
+.st{font-size:12.5px;font-weight:600;white-space:nowrap}
+.st.ok{color:var(--good)}.st.no{background:var(--bad);color:#fff;border-radius:999px;padding:2px 10px}.st.off{color:var(--muted);font-weight:400}
+.verdict{font-weight:600;font-size:14.5px}.verdict.ok{color:var(--good)}.verdict.no{color:var(--bad)}
+.pf .actions button{padding:8px 16px}
+.inbox.linked{background:var(--sky)!important}
+.portHint{font-size:12.5px;color:var(--muted);margin:0}
+.portHint.no{color:var(--bad);font-weight:500}
+@media(max-width:520px){.sc3 b{font-size:20px}.pf{padding:16px 14px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>จัดพอร์ต PVD แล้ววางแผนเกษียณ: ต้องมีเงินเท่าไร และต้องลงทุนเดือนละเท่าไร</h1>
+    <p class="lede">เลือกรูปแบบการวางแผน แล้วจัดสัดส่วนสินทรัพย์ในกองทุนสำรองเลี้ยงชีพ (ส่วนที่ 1) และกรอกข้อมูลแผนเกษียณ (ส่วนที่ 2) ทุกช่องแก้ได้ แล้วกด “คำนวณ” ผลจะแสดงด้านล่าง ตัวเลขที่กรอกไว้จะถูกจำไว้ในเบราว์เซอร์นี้ ค่าที่ใส่มาให้เป็นตัวอย่าง</p>
+  </header>
+
+  <section class="mode" aria-label="เลือกรูปแบบการวางแผน">
+    <h2>รูปแบบการวางแผน</h2>
+    <div class="seg-ctl" role="radiogroup">
+      <label><input type="radio" name="mode" id="modeSimple" value="simple"><span>แบบง่าย</span></label>
+      <label><input type="radio" name="mode" id="modeFull" value="full"><span>แบบละเอียด</span></label>
+    </div>
+    <p id="modeHint"></p>
+  </section>
+
+  <h2 class="part-h">ส่วนที่ 1 · จัดพอร์ตกองทุนสำรองเลี้ยงชีพ</h2>
+  <section class="pf" id="port">
+    <p class="lede" style="margin:0">ใส่สัดส่วนสินทรัพย์ให้รวม 100% แล้วดูผลตอบแทนที่คาดในปีปกติ ปีแย่ และปีวิกฤต ผลตอบแทนเฉลี่ยจะส่งไปใช้ในข้อ 16 ของส่วนที่ 2</p>
+    <div class="pf-grid">
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="pf-scroll">
+          <table class="at"><thead><tr><th>ประเภทสินทรัพย์</th><th>สัดส่วน</th><th class="h-avg">เฉลี่ย</th><th class="h-bad">ปีแย่</th><th class="h-cri">ปีวิกฤต</th><th></th></tr></thead>
+          <tbody id="atb"></tbody>
+          <tfoot><tr><td>รวม</td><td id="wsum" style="text-align:right">–</td><td colspan="4" id="wleft" style="text-align:right"></td></tr></tfoot></table>
+        </div>
+        <div class="actions">
+          <button type="button" class="btn-main" id="fillBond">เติมตราสารหนี้ให้ครบ 100%</button>
+          <button type="button" class="btn-alt" id="addAsset">+ เพิ่มสินทรัพย์</button>
+          <button type="button" class="btn-alt" id="resetR" style="border-color:var(--line);color:var(--muted)">คืนค่าผลตอบแทนเริ่มต้น</button>
+          <button type="button" class="btn-alt" id="clearW" style="border-color:var(--line);color:var(--muted)">ล้างสัดส่วน</button>
+        </div>
+        <p class="note" style="margin:0">ผลตอบแทน (% ต่อปี) เป็นค่าคาดการณ์ ไม่ใช่การรับประกันผลตอบแทน ผลการดำเนินงานจริงอาจต่างจากค่าคาดการณ์ได้ ช่องผลตอบแทนแก้ไขได้ทุกช่อง สินทรัพย์ที่เพิ่มเองไม่ถูกนับในเงื่อนไขด้านขวา</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="sc3">
+          <div class="s-avg"><span>เฉลี่ย</span><b id="pAvg">–</b><small>ต่อปี</small></div>
+          <div class="s-bad"><span>ปีแย่</span><b id="pBad">–</b><small>ต่อปี</small></div>
+          <div class="s-cri"><span>ปีวิกฤต</span><b id="pCri">–</b><small>ต่อปี</small></div>
+        </div>
+        <div class="mix" id="mix" aria-label="สัดส่วนสินทรัพย์"></div>
+        <div class="mixl" id="mixl"></div>
+        <div class="rules" id="rules"><h3 style="margin-bottom:2px">เงื่อนไขการจัดพอร์ต</h3></div>
+        <div class="verdict" id="verdict"></div>
+        <div class="actions"><button type="button" class="btn-main" id="goPvd">ใช้ผลตอบแทนเฉลี่ยในแผนเกษียณ ↓</button></div>
+      </div>
+    </div>
+  </section>
+
+  <h2 class="part-h">ส่วนที่ 2 · แผนเกษียณ</h2>
+  <form id="f" class="panels" autocomplete="off">
+    <section class="panel">
+      <h3>อายุ ค่าใช้จ่าย และช่วงเวลา <span class="tag">ข้อ 1–7</span></h3>
+      <div class="field"><label for="age">1. อายุปัจจุบัน</label><div class="inbox"><input id="age" type="number" step="1" min="0" placeholder="เช่น 35"><span class="u">ปี</span></div></div>
+      <div class="field"><label for="retAge">2. อายุที่คาดว่าเกษียณ</label><div class="inbox"><input id="retAge" type="number" step="1"><span class="u">ปี</span></div></div>
+      <div class="field"><label for="lifeAge">3. อายุที่อยู่ใช้เงินถึง</label><div class="inbox"><input id="lifeAge" type="number" step="1"><span class="u">ปี</span></div></div>
+      <div class="field"><label for="exp">4. ค่าใช้จ่ายหลังเกษียณต่อเดือน<small>คิดเป็นราคาวันนี้</small></label><div class="inbox"><input id="exp" type="text" inputmode="decimal" data-money="1" placeholder="เช่น 20,000"><span class="u">บาท</span></div></div>
+      <div class="field"><label for="inf">5. อัตราเงินเฟ้อ</label><div class="inbox"><input id="inf" type="number" step="0.1"><span class="u">%/ปี</span></div></div>
+      <div class="field"><label for="startMonth">6. เดือนที่เริ่มวางแผนการเงิน<small>ใช้คิดผลตอบแทนตามสัดส่วนของปีแรก</small></label><div class="inbox"><select id="startMonth" style="flex:1;border:0;background:transparent;color:var(--ink);font:inherit;padding:7px 8px"></select></div></div>
+      <div class="field"><label for="retMonth">7. เดือนที่เกษียณ (สิ้นเดือน)<small>ในปีที่อายุครบตามข้อ 2</small></label><div class="inbox"><select id="retMonth" style="flex:1;border:0;background:transparent;color:var(--ink);font:inherit;padding:7px 8px"></select></div></div>
+    </section>
+
+    <section class="panel">
+      <h3>เงินเดือนและกองทุนสำรองเลี้ยงชีพ <span class="tag">ข้อ 8–14</span></h3>
+      <div class="field"><label for="fund0">8. เงินกองทุนในปัจจุบัน<small>เว้นว่าง = 0</small></label><div class="inbox"><input id="fund0" type="text" inputmode="decimal" data-money="1" placeholder="0"><span class="u">บาท</span></div></div>
+      <div class="field"><label for="salary">9. เงินเดือนปัจจุบัน</label><div class="inbox"><input id="salary" type="text" inputmode="decimal" data-money="1" placeholder="เช่น 30,000"><span class="u">บาท</span></div></div>
+      <div class="field"><label for="salInc">10. อัตราขึ้นเงินเดือน</label><div class="inbox"><input id="salInc" type="number" step="0.1"><span class="u">%/ปี</span></div></div>
+      <div class="field"><label for="cap">11. เพดานเงินเดือน<small>เว้นว่าง = ไม่มีเพดาน</small></label><div class="inbox"><input id="cap" type="text" inputmode="decimal" data-money="1" placeholder="ไม่มี"><span class="u">บาท</span></div></div>
+      <div class="field"><label for="empRate">12. อัตราเงินสะสม (ลูกจ้าง)</label><div class="inbox"><input id="empRate" type="number" step="0.5"><span class="u">%</span></div></div>
+      <div class="sub">
+        <div>13. อัตราเงินสมทบ (นายจ้าง)</div>
+        <div class="radios" role="radiogroup">
+          <label><input type="radio" name="erMode" id="erFixed" value="fixed"> คงที่</label>
+          <label><input type="radio" name="erMode" id="erStep" value="step"> ตามขั้นบันได</label>
+        </div>
+        <div id="tiers" class="sub" style="border:0;padding:0"></div>
+        <div id="workBox" class="sub">
+      <div class="field"><label for="workMonth">14. เดือนที่เข้าทำงาน<small>ใช้นับอายุงานสำหรับขั้นบันได</small></label><div class="inbox"><select id="workMonth" style="flex:1;border:0;background:transparent;color:var(--ink);font:inherit;padding:7px 8px"></select></div></div>
+      <div class="field"><label for="workYear">ปีที่เข้าทำงาน<small id="svcHint">อายุงานเพิ่ม 1 ปีทุกครบรอบเดือนที่เข้าทำงาน</small></label><div class="inbox"><input id="workYear" type="number" step="1"><span class="u">พ.ศ.</span></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h3>ผลตอบแทนที่คาด <span class="tag">ข้อ 15–17</span></h3>
+      <div class="field"><label for="rPre">15. ผลตอบแทนก่อนเกษียณ<small>ใช้กับเงินลงทุนปัจจุบันและเงินลงทุนเพิ่ม</small></label><div class="inbox"><input id="rPre" type="number" step="0.1"><span class="u">%/ปี</span></div></div>
+      <div class="field"><label for="rPvd">16. ผลตอบแทนกองทุนสำรองเลี้ยงชีพ</label><div class="inbox"><input id="rPvd" type="number" step="0.01"><span class="u">%/ปี</span></div></div>
+      <label class="chk"><input type="checkbox" id="usePort" checked> ใช้ผลตอบแทนเฉลี่ยจากพอร์ตในส่วนที่ 1</label>
+      <p class="portHint" id="portHint"></p>
+      <div class="field"><label for="rPost">17. ผลตอบแทนหลังเกษียณ<small>ใช้คิดลดค่าใช้จ่ายและบำนาญด้วย</small></label><div class="inbox"><input id="rPost" type="number" step="0.1"><span class="u">%/ปี</span></div></div>
+    </section>
+
+    <section class="panel adv">
+      <h3>เงินที่มีและจะได้ <span class="tag">ข้อ 18–20</span></h3>
+      <div class="field"><label for="invest0">18. เงินลงทุนเพื่อเกษียณในปัจจุบัน</label><div class="inbox"><input id="invest0" type="text" inputmode="decimal" data-money="1"><span class="u">บาท</span></div></div>
+      <div class="field"><label for="lumpRet">19. เงินก้อนที่คาดว่าจะได้วันเกษียณ<small>บำเหน็จ เงินชดเชย ฯลฯ</small></label><div class="inbox"><input id="lumpRet" type="text" inputmode="decimal" data-money="1"><span class="u">บาท</span></div></div>
+      <div class="field"><label for="pension">20. บำนาญที่คาดว่าจะได้ต่อเดือน</label><div class="inbox"><input id="pension" type="text" inputmode="decimal" data-money="1"><span class="u">บาท</span></div></div>
+    </section>
+
+    <section class="panel adv">
+      <h3>เงินก้อนอื่นที่ต้องใช้วันเกษียณ <span class="tag">ข้อ 21</span></h3>
+      <div class="field"><label for="car">21.1 ซื้อรถ</label><div class="inbox"><input id="car" type="text" inputmode="decimal" data-money="1"><span class="u">บาท</span></div></div>
+      <div class="field"><label for="house">21.2 ซ่อมแซมบ้าน</label><div class="inbox"><input id="house" type="text" inputmode="decimal" data-money="1"><span class="u">บาท</span></div></div>
+      <div class="field"><label for="med">21.3 ค่ารักษาพยาบาล / เบี้ยประกัน</label><div class="inbox"><input id="med" type="text" inputmode="decimal" data-money="1"><span class="u">บาท</span></div></div>
+      <div class="field"><label for="travel">21.4 ท่องเที่ยวต่อปี</label><div class="inbox"><input id="travel" type="text" inputmode="decimal" data-money="1"><span class="u">บาท/ปี</span></div></div>
+      <div class="field"><label for="travelYears">จำนวนปีที่เที่ยว</label><div class="inbox"><input id="travelYears" type="number" step="1"><span class="u">ปี</span></div></div>
+      <label class="chk"><input type="checkbox" id="lumpInfl"> ตัวเลขข้อ 21 เป็นราคาวันนี้ (ปรับตามเงินเฟ้อถึงวันเกษียณ)</label>
+    </section>
+  </form>
+
+  <div class="actions">
+    <button type="button" class="btn-main" id="calcBtn">คำนวณ</button>
+    <button type="button" class="btn-alt" id="infoBtn">แสดง infographic</button>
+    <button type="button" class="btn-alt" id="resetBtn" style="border-color:var(--line);color:var(--muted)">คืนค่าเริ่มต้น</button>
+    <span id="err" class="err" role="alert"></span>
+  </div>
+
+  <section class="results" id="results" aria-live="polite">
+    <header><h2>ผลการคำนวณ</h2><p id="resMeta"></p></header>
+    <div class="row need"><span class="n">1</span><div class="t">เงินก้อนที่ต้องมีในวันเกษียณ<small id="r1s"></small></div><div class="v" id="r1"></div></div>
+    <div class="row minus"><span class="n">2</span><div class="t">เงินที่ได้จากกองทุนสำรองเลี้ยงชีพ<small id="r2s"></small></div><div class="v" id="r2"></div></div>
+    <div class="row minus"><span class="n">3</span><div class="t">เงินที่ได้จากเงินลงทุนในปัจจุบัน<small id="r3s"></small></div><div class="v" id="r3"></div></div>
+    <div class="row minus"><span class="n">4</span><div class="t">มูลค่าเงินบำนาญ ณ วันเกษียณ (NPV)<small id="r4s"></small></div><div class="v" id="r4"></div></div>
+    <div class="row minus"><span class="n">+</span><div class="t">เงินก้อนที่ได้วันเกษียณ (ข้อ 19)<small>บำเหน็จ เงินชดเชย ฯลฯ</small></div><div class="v" id="r4b"></div></div>
+    <div class="row gap" id="gapRow"><span class="n">5</span><div class="t" id="r5t">เงินที่ต้องการเพิ่ม<small>ข้อ 1 − (2 + 3 + 4 + เงินก้อน)</small></div><div class="v" id="r5"></div></div>
+    <div class="row save"><span class="n">6</span><div class="t">เงินที่ควรลงทุนต่อเดือนเพื่อเติมส่วนที่ขาด<small id="r6s"></small></div><div class="v" id="r6"></div></div>
+    <div class="row"><span class="n">7</span><div class="t"><label for="reqRet">ผลตอบแทนที่ต้องการจากการลงทุน</label><small>เริ่มต้นเท่ากับข้อ 15 ลองปรับเพื่อดูเงินลงทุนต่อเดือนที่เปลี่ยนไป</small></div><div class="inbox sm"><input id="reqRet" type="number" step="0.5"><span class="u">%</span></div></div>
+  </section>
+
+  <section class="info" id="info" hidden>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
+      <h2>Infographic แผนเกษียณ</h2>
+      <span class="note" id="infoMeta"></span>
+    </div>
+    <div class="hero" id="hero"></div>
+    <div class="tabs" role="tablist">
+      <button type="button" role="tab" aria-selected="true" data-p="pTimeline">ไทม์ไลน์</button>
+      <button type="button" role="tab" aria-selected="false" data-p="pSummary">สรุปตัวเลข</button>
+      <button type="button" role="tab" aria-selected="false" data-p="pEq">สมการแผนเกษียณ</button>
+    </div>
+    <div class="page on" id="pTimeline"></div>
+    <div class="page" id="pSummary"></div>
+    <div class="page" id="pEq"></div>
+  </section>
+
+  <p class="note">วิธีคิด: ค่าใช้จ่ายหลังเกษียณปรับขึ้นตามเงินเฟ้อทุกปี คิดลดกลับมาที่วันเกษียณด้วยผลตอบแทนหลังเกษียณ (จ่ายต้นปี) • กองทุนสำรองฯ เงินลงทุนปัจจุบัน และเงินลงทุนเพิ่ม (ผลข้อ 2, 3, 6) ใช้กติกาเดียวกัน: เงินเข้าทุกสิ้นเดือน ทบต้นทุกสิ้นปี (31 ธ.ค.) เงินที่มีตั้งแต่ต้นปีได้ผลตอบแทนเต็มปี เงินที่เข้าระหว่างปีได้ผลตอบแทนตามจำนวนเดือนที่เหลือของปี เริ่มเดือนในข้อ 6 ปีนี้ ถึงสิ้นเดือนในข้อ 7 ของปีที่เกษียณ • เงินเดือนขึ้นทุกสิ้นเดือนธันวาคม และไม่เกินเพดาน อัตราสมทบตามอายุงานปีที่กำลังทำ อายุงานคิดจากเดือน/ปีที่เข้าทำงาน (ข้อ 14) และเพิ่มทุกครบรอบเดือนที่เข้าทำงาน อัตราใหม่มีผลตั้งแต่เดือนครบรอบนั้น • บำนาญคิด NPV ด้วยผลตอบแทนหลังเกษียณ (ค่าเริ่มต้น 3%) ใช้เพื่อประกอบการวางแผนเท่านั้น ไม่ใช่คำแนะนำการลงทุน</p>
+</div>
+
+<script>
+const DEF = {age:"",retAge:60,lifeAge:85,exp:"",inf:3,rPre:5,rPvd:5,rPost:3,fund0:"",salary:"",salInc:3,workYear:new Date().getFullYear()+543-5,cap:"",empRate:3,
+  invest0:0,lumpRet:0,pension:0,car:0,house:0,med:0,travel:0,travelYears:0,lumpInfl:false,
+  erMode:"step",fixedRate:5,tiers:[{limit:10,rate:6,add:true},{limit:20,rate:7,add:true},{limit:30,rate:8,add:false}],reqRet:null};
+const IDS = ["age","retAge","lifeAge","exp","inf","rPre","rPvd","rPost","fund0","salary","salInc","workYear","cap","empRate","invest0","lumpRet","pension","car","house","med","travel","travelYears"];
+const $ = id => document.getElementById(id);
+const TH_M = ["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
+DEF.startMonth = new Date().getMonth()+1;
+DEF.retMonth = 12;
+DEF.mode = "simple";
+DEF.ver = 2;
+DEF.workMonth = 1;
+let S = JSON.parse(JSON.stringify(DEF));
+try{
+  const raw = localStorage.getItem("retirePlanV1");
+  if(raw){
+    const saved = JSON.parse(raw);
+    // data saved before the new defaults: reset item 21 to 0 and start in simple mode
+    if(!(saved.ver >= 2)){ ["car","house","med","travel","travelYears"].forEach(k => saved[k] = 0); saved.mode = "simple"; }
+    S = Object.assign(S, saved);
+  }
+}catch(e){}
+S.ver = 2;
+function save(){ try{ localStorage.setItem("retirePlanV1", JSON.stringify(S)); }catch(e){} }
+
+const fmt = v => { const r=Math.round(v); return (r===0?0:r).toLocaleString("th-TH"); };
+const fmtB = v => fmt(v) + " บาท";
+const fmtM = v => { const a=Math.abs(v); if(a<0.5) return "0"; if(a>=1e6) return (v/1e6).toLocaleString("th-TH",{maximumFractionDigits:2})+" ล้าน"; return fmt(v); };
+const pct = v => (+v).toLocaleString("th-TH",{maximumFractionDigits:2})+"%";
+
+function applyMode(){
+  const simple = S.mode !== "full";
+  $(simple ? "modeSimple" : "modeFull").checked = true;
+  document.querySelectorAll(".adv").forEach(el => el.hidden = simple);
+  $("modeHint").textContent = simple
+    ? "กรอกเฉพาะข้อ 1–17 ไม่นับเงินลงทุนที่มี บำเหน็จ บำนาญ และเงินก้อนพิเศษ (ข้อ 18–21)"
+    : "กรอกครบทุกข้อ รวมเงินลงทุนที่มี บำเหน็จ บำนาญ และเงินก้อนที่ต้องใช้วันเกษียณ";
+}
+function loadForm(){
+  applyMode();
+  IDS.forEach(id => { const el=$(id); el.value = el.dataset.money ? moneyStr(S[id]) : S[id]; });
+  $("startMonth").value = S.startMonth;
+  $("retMonth").value = S.retMonth;
+  $("workMonth").value = S.workMonth;
+  $("lumpInfl").checked = !!S.lumpInfl;
+  $(S.erMode==="fixed"?"erFixed":"erStep").checked = true;
+  renderTiers();
+}
+function moneyStr(v){ const d=String(v??"").replace(/[^\d.]/g,""); if(d==="") return ""; const [i,f]=d.split("."); let o=Number(i||0).toLocaleString("en-US"); if(f!==undefined) o+="."+f.slice(0,2); return o; }
+function fmtMoneyInput(el){
+  const fromEnd = el.value.length - (el.selectionStart ?? el.value.length);
+  el.value = moneyStr(el.value);
+  const p = Math.max(0, el.value.length - fromEnd);
+  try{ el.setSelectionRange(p,p); }catch(e){}
+}
+function readForm(){
+  IDS.forEach(id => { S[id] = $(id).value; });
+  S.startMonth = +$("startMonth").value;
+  S.retMonth = +$("retMonth").value;
+  S.workMonth = +$("workMonth").value;
+  S.lumpInfl = $("lumpInfl").checked;
+  S.erMode = $("erFixed").checked ? "fixed" : "step";
+}
+function num(v){ const n = parseFloat(String(v).replace(/,/g,"")); return isNaN(n) ? 0 : n; }
+
+function visibleTiers(){
+  const out=[]; for(const t of S.tiers){ out.push(t); if(!t.add) break; } return out;
+}
+function renderTiers(){
+  const box = $("tiers"); box.innerHTML="";
+  $("workBox").hidden = S.erMode==="fixed";
+  if(S.erMode==="fixed"){
+    box.innerHTML = `<div class="tier">อัตราเงินสมทบคงที่ <span class="inbox sm"><input id="fixedRate" type="number" step="0.5" value="${S.fixedRate}"><span class="u">%</span></span></div>`;
+    $("fixedRate").addEventListener("input", e => { S.fixedRate = e.target.value; save(); });
+    return;
+  }
+  const vis = visibleTiers();
+  vis.forEach((t,i) => {
+    const last = !t.add;
+    const d = document.createElement("div"); d.className="tier";
+    let html;
+    if(last && i===0) html = `อัตราเงินสมทบคงที่ <span class="inbox sm"><input data-i="${i}" data-k="rate" id="tr${i}" type="number" step="0.5" value="${t.rate}"><span class="u">%</span></span>`;
+    else if(last) html = `อายุงานเกิน <b class="num">${vis[i-1].limit}</b> ปี <span class="inbox sm"><input data-i="${i}" data-k="rate" id="tr${i}" type="number" step="0.5" value="${t.rate}"><span class="u">%</span></span>`;
+    else html = `อายุงานไม่เกิน <span class="inbox sm"><input data-i="${i}" data-k="limit" id="tl${i}" type="number" step="1" value="${t.limit}"><span class="u">ปี</span></span> <span class="inbox sm"><input data-i="${i}" data-k="rate" id="tr${i}" type="number" step="0.5" value="${t.rate}"><span class="u">%</span></span>`;
+    html += `<label class="chk"><input type="checkbox" id="ta${i}" data-i="${i}" ${t.add?"checked":""}> เพิ่มขั้นเงินสมทบ</label>`;
+    d.innerHTML = html; box.appendChild(d);
+  });
+  box.querySelectorAll("input[data-k]").forEach(inp => inp.addEventListener("input", e => {
+    const i=+e.target.dataset.i, k=e.target.dataset.k; S.tiers[i][k] = e.target.value; save();
+    if(k==="limit"){ const nx=$("tiers").querySelectorAll(".tier")[i+1]; if(nx && !S.tiers[i+1].add){ const b=nx.querySelector("b"); if(b) b.textContent=e.target.value; } }
+  }));
+  box.querySelectorAll("input[type=checkbox]").forEach(cb => cb.addEventListener("change", e => {
+    const i=+e.target.dataset.i; const t=S.tiers[i]; t.add = e.target.checked;
+    if(t.add){
+      const prev = i>0 ? num(S.tiers[i-1].limit) : 0;
+      if(!(num(t.limit) > prev)) t.limit = prev + 10;
+      if(!S.tiers[i+1]) S.tiers.push({limit:num(t.limit)+10, rate:num(t.rate)+1, add:false});
+    }
+    save(); renderTiers();
+  }));
+}
+
+function erRate(svcYear){
+  if(S.erMode==="fixed") return num(S.fixedRate)/100;
+  const vis = visibleTiers();
+  for(let i=0;i<vis.length-1;i++){ if(svcYear <= num(vis[i].limit)) return num(vis[i].rate)/100; }
+  return num(vis[vis.length-1].rate)/100;
+}
+// completed service at the start month of the plan (this year); year may be พ.ศ. or ค.ศ.
+function serviceAtStart(){
+  let wy = num(S.workYear); if(!wy) return null; if(wy > 2400) wy -= 543;
+  const wm = Math.min(12,Math.max(1,num(S.workMonth)||1)), sm = Math.min(12,Math.max(1,num(S.startMonth)||1));
+  const months = (new Date().getFullYear()*12 + sm) - (wy*12 + wm);
+  return {months, years: Math.floor(months/12), rem: ((months%12)+12)%12};
+}
+function updateSvcHint(){
+  const sv = serviceAtStart(), el = $("svcHint"); if(!el) return;
+  el.textContent = (sv && sv.months>=0) ? `อายุงาน ณ เดือนที่เริ่มวางแผน: ${sv.years} ปี ${sv.rem} เดือน` : "อายุงานเพิ่ม 1 ปีทุกครบรอบเดือนที่เข้าทำงาน";
+}
+function pvGrow(pmt,g,r,N){ let s=0; for(let t=0;t<N;t++) s += pmt*Math.pow(1+g,t)/Math.pow(1+r,t); return s; }
+
+function compute(){
+  const miss = [["age","ข้อ 1 อายุปัจจุบัน"],["exp","ข้อ 4 ค่าใช้จ่ายต่อเดือน"],["salary","ข้อ 9 เงินเดือนปัจจุบัน"]].filter(([k]) => String(S[k]??"").trim()==="").map(x=>x[1]);
+  if(miss.length) return {err:"กรอก " + miss.join(", ") + " แล้วกด คำนวณ"};
+  const p = {}; IDS.forEach(id => p[id]=num(S[id]));
+  if(S.mode !== "full"){ ["invest0","lumpRet","pension","car","house","med","travel","travelYears"].forEach(k => p[k]=0); }
+  const inf=p.inf/100, rPre=p.rPre/100, rPvd=p.rPvd/100, rPost=p.rPost/100, g=p.salInc/100, c=p.empRate/100;
+  if(p.retAge <= p.age) return {err:"อายุเกษียณต้องมากกว่าอายุปัจจุบัน"};
+  if(p.lifeAge <= p.retAge) return {err:"อายุที่อยู่ใช้เงินต้องมากกว่าอายุเกษียณ"};
+  const n = Math.round(p.retAge - p.age), N = Math.round(p.lifeAge - p.retAge);
+  // timeline: start of month sm (this year) → end of month rmo in year n (the year you turn retAge)
+  const sm = Math.min(12,Math.max(1,Math.round(num(S.startMonth)||1)));
+  const rmo = Math.min(12,Math.max(1,Math.round(num(S.retMonth)||12)));
+  const M = n*12 + (rmo - sm + 1);
+  if(M <= 0) return {err:"เดือนเกษียณต้องอยู่หลังเดือนที่เริ่มวางแผน"};
+  if(S.erMode==="fixed"){ p.svc = 0; }
+  else {
+    const sv = serviceAtStart();
+    if(sv===null) return {err:"กรุณากรอกปีที่เข้าทำงาน (พ.ศ.) ในข้อ 14"};
+    if(sv.months < 0) return {err:"เดือน/ปีที่เข้าทำงาน (ข้อ 14) ต้องไม่อยู่หลังเดือนที่เริ่มวางแผน"};
+    p.svc = sv.years;
+  }
+  const infMul = Math.pow(1+inf,n);
+  const mExpRet = p.exp*infMul;
+  const needBasic = pvGrow(mExpRet*12, inf, rPost, N);
+  const lm = S.lumpInfl ? infMul : 1;
+  const car=p.car*lm, house=p.house*lm, med=p.med*lm;
+  const travelYear = p.travel*lm, ty = Math.max(0,Math.round(p.travelYears));
+  const travelPV = pvGrow(travelYear, S.lumpInfl?inf:0, rPost, ty);
+  const special = car+house+med+travelPV;
+  const need = needBasic + special;
+
+  // Shared accumulation rule (used by PVD and the monthly DCA):
+  // deposits at the END of each month; compounding once a year on 31 Dec.
+  // Money present at the start of a period earns r × (months in the period)/12 (full year = r);
+  // a deposit made at the end of month cm earns r × (months left after cm)/12.
+  // First period starts at the beginning of month sm; last period ends at the end of month rmo in year n.
+  const accum = (open, amtAt, rate) => {
+    let B=open, D=0, I=0; const arr=[open];
+    for(let j=0;j<M;j++){
+      const cm = ((sm-1+j)%12)+1, yr = Math.floor((sm-1+j)/12), last = yr===n;
+      const endM = last ? rmo : 12;
+      if(j===0 || cm===1) I += B*rate*(endM-cm+1)/12;
+      const a = amtAt(j); D += a; I += a*rate*(endM-cm)/12;
+      if(cm===12 && !last){ B = B+D+I; D=0; I=0; arr.push(B); }
+    }
+    B = B+D+I;
+    while(arr.length<n) arr.push(arr[arr.length-1]); arr.length = n; arr.push(B);
+    return {fv:B, arr};
+  };
+
+  // PVD contributions month by month (salary rises at the end of every December;
+  // service years go up by one on each work anniversary month)
+  const wm = Math.min(12,Math.max(1,Math.round(num(S.workMonth)||sm)));
+  let cEmp=0, cEr=0; const tierChanges=[]; let lastEr=null, salLast=p.salary; const contrib=[];
+  let comp = Math.max(0,Math.floor(p.svc));
+  for(let m=0;m<M;m++){
+    const y=Math.floor(m/12), cm=((sm-1+m)%12)+1, calYr=Math.floor((sm-1+m)/12);
+    if(m>0 && cm===wm) comp++;
+    let sal = p.salary*Math.pow(1+g,calYr); if(p.cap>0) sal=Math.min(sal,p.cap);
+    salLast = sal;
+    const er = erRate(comp + 1);
+    if(lastEr!==null && er!==lastEr) tierChanges.push({age:p.age+y, rate:er, svc:comp, month:cm}); lastEr=er;
+    cEmp += sal*c; cEr += sal*er; contrib.push(sal*(c+er));
+  }
+  const pvdRes = accum(p.fund0, j=>contrib[j], rPvd);
+  const pvd = pvdRes.fv, pvdArr = pvdRes.arr;
+  const invRes = accum(p.invest0, ()=>0, rPre);
+  const inv = invRes.fv, invArr = invRes.arr;
+  const pensionPV = pvGrow(p.pension*12, 0, rPost, N);
+  const lump = p.lumpRet;
+  const have = pvd + inv + pensionPV + lump;
+  const gap = need - have;
+
+  const reqRet = (S.reqRet===null || S.reqRet==="" ) ? p.rPre : num(S.reqRet);
+  const rr = reqRet/100;
+  const dca = (amt) => accum(0, ()=>amt, rr);
+  const fv1 = dca(1).fv;
+  const pmt = gap>0 && fv1>0 ? gap/fv1 : 0;
+  const savArr = dca(pmt).arr; const sb = savArr[savArr.length-1];
+
+  // drawdown after retirement
+  let A0 = pvd + inv + lump + (gap>0 ? sb : 0) - car - house - med;
+  const postArr=[A0];
+  for(let t=0;t<N;t++){
+    const out = mExpRet*12*Math.pow(1+inf,t) + (t<ty ? travelYear*Math.pow(1+(S.lumpInfl?inf:0),t) : 0) - p.pension*12;
+    A0 = (A0 - out)*(1+rPost); postArr.push(A0);
+  }
+  return {sm,rmo,p,n,N,M,infMul,mExpRet,needBasic,car,house,med,travelYear,ty,travelPV,special,need,pvd,cEmp,cEr,inv,pensionPV,lump,have,gap,reqRet,pmt,
+    pvdArr,invArr,savArr,postArr,tierChanges,salLast,erStart:erRate(p.svc+1)};
+}
+
+let R = null;
+function showResults(quiet){
+  const r = compute(); $("err").textContent = (r.err && !quiet) ? r.err : "";
+  if(r.err){
+    R = null;
+    ["r1","r2","r3","r4","r4b","r5","r6"].forEach(id => $(id).textContent = "–");
+    ["r1s","r2s","r3s","r4s","r6s"].forEach(id => $(id).textContent = "");
+    $("gapRow").classList.remove("ok");
+    $("resMeta").textContent = r.err;
+    $("info").hidden = true;
+    return;
+  }
+  R = r; updateSvcHint();
+  $("resMeta").textContent = `อีก ${r.n} ปีถึงวันเกษียณ • ใช้เงินหลังเกษียณ ${r.N} ปี`;
+  $("r1").textContent = fmtB(r.need);
+  $("r1s").textContent = `ค่าใช้จ่ายพื้นฐาน ${fmtB(r.needBasic)} + เงินก้อนพิเศษ ${fmtB(r.special)} (ค่าใช้จ่าย ณ วันเกษียณ ${fmt(r.mExpRet)} บาท/เดือน)`;
+  $("r2").textContent = fmtB(r.pvd);
+  $("r2s").textContent = `เงินสะสม+สมทบรวม ${fmtB(r.cEmp+r.cEr)} ที่เหลือคือผลตอบแทน ${pct(r.p.rPvd)}/ปี`;
+  $("r3").textContent = fmtB(r.inv);
+  $("r3s").textContent = `${fmtB(r.p.invest0)} เติบโต ${pct(r.p.rPre)}/ปี ทบต้นสิ้นปี รวม ${r.M} เดือน (${TH_M[r.sm-1]} ปีนี้ ถึงสิ้น${TH_M[r.rmo-1]} ปีที่เกษียณ)`;
+  $("r4").textContent = fmtB(r.pensionPV);
+  $("r4s").textContent = r.p.pension>0 ? `${fmt(r.p.pension)} บาท/เดือน × ${r.N} ปี คิดลด ${pct(r.p.rPost)}` : "ไม่มีบำนาญ";
+  $("r4b").textContent = fmtB(r.lump);
+  const ok = r.gap<=0;
+  $("gapRow").classList.toggle("ok", ok);
+  $("r5t").firstChild.textContent = ok ? "เงินเกินเป้าหมาย (ไม่ต้องหาเพิ่ม)" : "เงินที่ต้องการเพิ่ม";
+  $("r5").textContent = fmtB(Math.abs(r.gap));
+  $("r6").textContent = ok ? "0 บาท/เดือน" : fmt(r.pmt)+" บาท/เดือน";
+  $("r6s").textContent = ok ? "เงินที่มีพอแล้วตามสมมติฐานนี้" : `DCA สิ้นเดือน ${TH_M[r.sm-1]} ปีนี้ ถึง ${TH_M[r.rmo-1]} ปีที่เกษียณ รวม ${r.M} งวด • ผลตอบแทน ${pct(r.reqRet)}/ปี ทบต้นสิ้นปี เงินเข้าระหว่างปีได้ผลตอบแทนตามสัดส่วนเดือน`;
+  if(document.activeElement !== $("reqRet")) $("reqRet").value = r.reqRet;
+  if(!$("info").hidden) renderInfo();
+}
+
+/* ---------- infographic ---------- */
+function niceMax(v){ if(v<=0) return 1; const e=Math.pow(10,Math.floor(Math.log10(v))); const f=v/e; return (f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*e; }
+function css(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+
+function chartSVG(r){
+  const W=900,H=330,L=70,Rm=20,T=20,B=40;
+  const ages=[]; for(let a=r.p.age;a<=r.p.lifeAge;a++) ages.push(a);
+  const pre=[]; for(let k=0;k<=r.n;k++) pre.push({pvd:r.pvdArr[k]||0, inv:r.invArr[k]||0, sav:r.savArr[k]||0});
+  const totals = pre.map(d=>d.pvd+d.inv+d.sav).concat(r.postArr);
+  const ymax = niceMax(Math.max(...totals, 1));
+  const ymin = Math.min(0, ...r.postArr);
+  const yLo = ymin<0 ? -niceMax(-ymin) : 0;
+  const x = a => L + (a-r.p.age)/(r.p.lifeAge-r.p.age)*(W-L-Rm);
+  const y = v => T + (1-(v-yLo)/(ymax-yLo))*(H-T-B);
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="กราฟเงินสะสมตามอายุ">`;
+  const ticks=4;
+  for(let i=0;i<=ticks;i++){ const v=yLo+(ymax-yLo)*i/ticks; s+=`<line x1="${L}" x2="${W-Rm}" y1="${y(v)}" y2="${y(v)}" stroke="${css('--line')}" stroke-width="1"/>`+
+    `<text x="${L-8}" y="${y(v)+4}" text-anchor="end" font-size="12" fill="${css('--muted')}">${fmtM(v)}</text>`; }
+  const step = (r.p.lifeAge-r.p.age)>40?10:5;
+  for(let a=Math.ceil(r.p.age/step)*step;a<=r.p.lifeAge;a+=step){ s+=`<text x="${x(a)}" y="${H-B+20}" text-anchor="middle" font-size="12" fill="${css('--muted')}">${a}</text>`; }
+  s+=`<text x="${W-Rm}" y="${H-4}" text-anchor="end" font-size="12" fill="${css('--muted')}">อายุ (ปี)</text>`;
+  // stacked areas pre-retirement
+  const layer=(f0,f1,color)=>{ let top="",bot=""; pre.forEach((d,k)=>{ top+=`${k?"L":"M"}${x(r.p.age+k)},${y(f1(d))} `; });
+    for(let k=pre.length-1;k>=0;k--) bot+=`L${x(r.p.age+k)},${y(f0(pre[k]))} `; return `<path d="${top}${bot}Z" fill="${color}" opacity=".9"/>`; };
+  s+=layer(d=>0,d=>d.pvd,css('--jade'));
+  s+=layer(d=>d.pvd,d=>d.pvd+d.inv,css('--sea'));
+  s+=layer(d=>d.pvd+d.inv,d=>d.pvd+d.inv+d.sav,css('--amber'));
+  // post retirement
+  let pp=`M${x(r.p.retAge)},${y(0)} `; r.postArr.forEach((v,t)=>{ pp+=`L${x(r.p.retAge+t)},${y(v)} `; }); pp+=`L${x(r.p.lifeAge)},${y(0)} Z`;
+  s+=`<path d="${pp}" fill="${css('--plum')}" opacity=".35"/>`;
+  let pl=""; r.postArr.forEach((v,t)=>{ pl+=`${t?"L":"M"}${x(r.p.retAge+t)},${y(v)} `; });
+  s+=`<path d="${pl}" fill="none" stroke="${css('--plum')}" stroke-width="2.5"/>`;
+  if(yLo<0) s+=`<line x1="${L}" x2="${W-Rm}" y1="${y(0)}" y2="${y(0)}" stroke="${css('--muted')}"/>`;
+  // retirement marker
+  const preTop = totals[r.n];
+  s+=`<line x1="${x(r.p.retAge)}" x2="${x(r.p.retAge)}" y1="${T}" y2="${H-B}" stroke="${css('--amber')}" stroke-dasharray="4 4"/>`;
+  s+=`<circle cx="${x(r.p.retAge)}" cy="${y(preTop)}" r="5" fill="${css('--amber')}" stroke="${css('--surface')}" stroke-width="2"/>`;
+  const lx = x(r.p.retAge) > W*0.7 ? x(r.p.retAge)-8 : x(r.p.retAge)+8, anc = x(r.p.retAge) > W*0.7 ? "end":"start";
+  s+=`<text x="${lx}" y="${Math.max(T+14,y(preTop)-10)}" text-anchor="${anc}" font-size="13" font-weight="600" fill="${css('--ink')}">เกษียณ ${r.p.retAge} ปี: ${fmt(preTop)} บาท</text>`;
+  const endV = r.postArr[r.postArr.length-1];
+  s+=`<circle cx="${x(r.p.lifeAge)}" cy="${y(endV)}" r="4" fill="${css('--plum')}"/>`;
+  s+=`</svg>`;
+  return s;
+}
+
+function timelinePage(r){
+  const ms = [];
+  ms.push({cls:"", age:r.p.age, title:"วันนี้", rows:[["กองทุนสำรองฯ", fmt(r.p.fund0)],["เงินลงทุน", fmt(r.p.invest0)],["อัตราสมทบนายจ้าง", pct(r.erStart*100)],["เริ่มลงทุนเพิ่ม/เดือน", fmt(r.pmt)]]});
+  r.tierChanges.forEach(tc => ms.push({cls:"", age:tc.age, title:"อัตราสมทบเพิ่มขึ้น", rows:[["อายุงานครบ", tc.svc+" ปี"],["มีผลเดือน", TH_M[tc.month-1]],["สมทบใหม่", pct(tc.rate*100)],["กองทุน ณ ตอนนั้น", fmt(r.pvdArr[tc.age-r.p.age]||0)]]}));
+  ms.push({cls:"ret", age:r.p.retAge, title:"วันเกษียณ", rows:[["ค่าใช้จ่าย/เดือน", fmt(r.mExpRet)],["ทุนที่ต้องมี", fmt(r.need)],["กองทุนสำรองฯ", fmt(r.pvd)],["เงินลงทุนเดิม", fmt(r.inv)],["เงินก้อน", fmt(r.lump)],["เงินลงทุนเพิ่มสะสม", fmt(r.savArr[r.n])],["จ่ายรถ+บ้าน+รักษา", fmt(r.car+r.house+r.med)]]});
+  if(r.ty>0 && r.p.travelYears>0) ms.push({cls:"ret", age:Math.min(r.p.retAge+r.ty, r.p.lifeAge), title:"จบแผนท่องเที่ยว", rows:[["เที่ยวปีละ", fmt(r.travelYear)],["จำนวน", r.ty+" ปี"],["มูลค่า ณ วันเกษียณ", fmt(r.travelPV)]]});
+  ms.push({cls:"end", age:r.p.lifeAge, title:"สิ้นสุดแผน", rows:[["ค่าใช้จ่าย/เดือน ปีสุดท้าย", fmt(r.mExpRet*Math.pow(1+r.p.inf/100,r.N-1))],["บำนาญ/เดือน", fmt(r.p.pension)],["เงินคงเหลือ", fmt(r.postArr[r.postArr.length-1])]]});
+  ms.sort((a,b)=>a.age-b.age);
+  // strip
+  const W=900, H=110, L=30, Rm=30;
+  const x = a => L + (a-r.p.age)/(r.p.lifeAge-r.p.age)*(W-L-Rm);
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="ไทม์ไลน์ช่วงชีวิต">`;
+  s += `<rect x="${x(r.p.age)}" y="48" width="${x(r.p.retAge)-x(r.p.age)}" height="14" rx="7" fill="${css('--jade')}"/>`;
+  s += `<rect x="${x(r.p.retAge)}" y="48" width="${x(r.p.lifeAge)-x(r.p.retAge)}" height="14" rx="7" fill="${css('--plum')}" opacity=".55"/>`;
+  s += `<text x="${(x(r.p.age)+x(r.p.retAge))/2}" y="84" text-anchor="middle" font-size="13" fill="${css('--jade')}" font-weight="600">ช่วงสะสมเงิน ${r.n} ปี</text>`;
+  s += `<text x="${(x(r.p.retAge)+x(r.p.lifeAge))/2}" y="84" text-anchor="middle" font-size="13" fill="${css('--plum')}" font-weight="600">ช่วงใช้เงิน ${r.N} ปี</text>`;
+  ms.forEach((m,i)=>{ const cx=x(m.age); const col = m.cls==="ret"?css('--amber'):m.cls==="end"?css('--plum'):css('--jade');
+    s+=`<circle cx="${cx}" cy="55" r="9" fill="${css('--surface')}" stroke="${col}" stroke-width="3"/>`;
+    const up = i%2===0; s+=`<text x="${cx}" y="${up?30:104}" text-anchor="middle" font-size="12.5" fill="${css('--ink')}" font-weight="600">${m.age} ปี</text>`; });
+  s += `</svg>`;
+  const cards = ms.map(m=>`<div class="mile ${m.cls}"><span class="age">อายุ ${m.age} ปี</span><b>${m.title}</b><dl>${m.rows.map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl></div>`).join("");
+  return `<div><span class="eyebrow">ไทม์ไลน์ทั้งแผน อายุ ${r.p.age}–${r.p.lifeAge} ปี (หน่วย: บาท)</span></div>
+    <div class="chart">${s}</div>
+    <div class="miles">${cards}</div>
+    <div><span class="eyebrow">เงินสะสมตามอายุ</span></div>
+    <div class="chart">${chartSVG(r)}</div>
+    <div class="legend"><span><i style="background:var(--jade)"></i>กองทุนสำรองเลี้ยงชีพ</span><span><i style="background:var(--sea)"></i>เงินลงทุนปัจจุบัน</span><span><i style="background:var(--amber)"></i>เงินลงทุนเพิ่ม ${fmt(r.pmt)} บาท/เดือน</span><span><i style="background:var(--plum)"></i>เงินคงเหลือหลังเกษียณ (หลังจ่ายเงินก้อน)</span></div>`;
+}
+
+function summaryPage(r){
+  const ok=r.gap<=0;
+  const li=(k,v,cls="")=>`<li class="${cls}"><span>${k}</span><span>${v}</span></li>`;
+  return `<div class="strip">
+      <span class="chip">อายุปัจจุบัน<b>${r.p.age}</b></span><span class="chip">เกษียณ<b>${r.p.retAge}</b></span><span class="chip">อีก<b>${r.n}</b> ปี</span>
+      <span class="chip">อยู่ถึง<b>${r.p.lifeAge}</b></span><span class="chip">ใช้เงิน<b>${r.N}</b> ปี</span>
+      <span class="chip">เงินเฟ้อ<b>${pct(r.p.inf)}</b></span><span class="chip">ตัวคูณเงินเฟ้อ<b>×${r.infMul.toFixed(2)}</b></span>
+      <span class="chip">ผลตอบแทน ก่อน / PVD / หลัง<b>${pct(r.p.rPre)} / ${pct(r.p.rPvd)} / ${pct(r.p.rPost)}</b></span>
+      <span class="chip">เงินสะสม PVD<b>${pct(r.p.empRate)}</b></span>
+    </div>
+    <div class="canvas">
+      <div class="col"><div class="hd"><span class="k">1</span><h3>ใช้เงินเท่าไร<small>ราคาวันนี้ ต่อเดือน</small></h3></div>
+        <ul>${li("ค่าใช้จ่าย/เดือน",fmt(r.p.exp))}${li("× ตัวคูณเงินเฟ้อ","×"+r.infMul.toFixed(2),"op")}${li(`ณ วันเกษียณ (อายุ ${r.p.retAge})`,fmt(r.mExpRet))}${li("ต่อปี",fmt(r.mExpRet*12))}</ul>
+        <div class="tot">ใช้/เดือน วันเกษียณ<b>${fmt(r.mExpRet)}</b></div></div>
+      <div class="col"><div class="hd"><span class="k">2</span><h3>ทุนพื้นฐาน<small>ค่าใช้จ่ายตลอด ${r.N} ปีหลังเกษียณ</small></h3></div>
+        <ul>${li("ปีแรก",fmt(r.mExpRet*12))}${li("ปรับขึ้นปีละ",pct(r.p.inf),"op")}${li("คิดลดด้วย",pct(r.p.rPost),"op")}${li("จำนวนปี",r.N+" ปี")}</ul>
+        <div class="tot">ทุนพื้นฐาน<b>${fmt(r.needBasic)}</b></div></div>
+      <div class="col a"><div class="hd"><span class="k">3</span><h3>ทุนพิเศษ + รวม<small>เงินก้อนที่ต้องใช้</small></h3></div>
+        <ul>${li("ซื้อรถ",fmt(r.car))}${li("ซ่อมบ้าน",fmt(r.house))}${li("รักษา/ประกัน",fmt(r.med))}${li(`เที่ยว ${fmt(r.travelYear)}×${r.ty} ปี`,fmt(r.travelPV))}${li("รวมทุนพิเศษ",fmt(r.special))}</ul>
+        <div class="tot">A. ทุนที่ต้องมี<b>${fmt(r.need)}</b></div></div>
+      <div class="col"><div class="hd"><span class="k">4</span><h3>มีอยู่แล้วเท่าไร<small>มูลค่า ณ วันเกษียณ</small></h3></div>
+        <ul>${li("กองทุนสำรองฯ",fmt(r.pvd))}${li("เงินลงทุนปัจจุบัน",fmt(r.inv))}${li("บำนาญ (NPV)",fmt(r.pensionPV))}${li("บำเหน็จ/เงินชดเชย",fmt(r.lump))}</ul>
+        <div class="tot">B. ทุนที่มีแล้ว<b>${fmt(r.have)}</b></div></div>
+      <div class="col g ${ok?"ok":""}"><div class="hd"><span class="k">5</span><h3>${ok?"เกินเป้าหมาย":"ส่วนที่ขาด"}<small>A − B</small></h3></div>
+        <ul>${li("A. ทุนที่ต้องมี",fmt(r.need))}${li("− B. ทุนที่มีแล้ว",fmt(r.have),"op")}${li(ok?"เกิน":"ขาด",fmt(Math.abs(r.gap)))}${li("ผลตอบแทนที่ใช้",pct(r.reqRet))}</ul>
+        <div class="tot">ลงทุนเพิ่ม/เดือน<b>${fmt(r.pmt)}</b></div></div>
+    </div>`;
+}
+
+function eqPage(r){
+  const ok=r.gap<=0;
+  const scale = Math.max(r.need, r.have, 1);
+  const w = v => Math.max(0, v/scale*100);
+  const seg = (v,label,color,extra="") => v>0 ? `<div class="seg ${extra}" style="width:${w(v)}%;${color?`background:${color}`:""}" title="${label} ${fmt(v)} บาท">${w(v)>13?`<span>${label}</span><b>${fmt(v)}</b>`:""}</div>` : "";
+  const work = r.pvd + r.lump;
+  return `<div class="eq">
+    <div class="bar-block"><h3><span>A. ทุนเกษียณที่ควรมี ณ วันเกษียณ</span><span style="color:var(--amber)">${fmtB(r.need)}</span></h3>
+      <div class="bar">${seg(r.needBasic,"ค่าใช้จ่ายพื้นฐาน","var(--sand)")}${seg(r.special,"ค่าใช้จ่ายพิเศษ","var(--amber)")}</div>
+      <div class="keys"><span><i style="background:var(--sand)"></i>ค่าใช้จ่ายพื้นฐาน (รายเดือนปรับเงินเฟ้อ × ${r.N} ปี) ${fmt(r.needBasic)}</span><span><i style="background:var(--amber)"></i>ค่าใช้จ่ายพิเศษ (รถ บ้าน รักษา เที่ยว) ${fmt(r.special)}</span></div></div>
+    <div class="bar-block"><h3><span>B. ทุนเกษียณที่มีแล้ว ณ วันเกษียณ</span><span style="color:var(--jade)">${fmtB(r.have)}</span></h3>
+      <div class="bar">${seg(r.pensionPV,"บำนาญ","var(--plum)")}${seg(work,"ที่ทำงาน","var(--jade)")}${seg(r.inv,"สร้างเอง","var(--sea)")}${!ok?seg(r.gap,"ส่วนที่ขาด","","hatch"):""}</div>
+      <div class="keys"><span><i style="background:var(--plum)"></i>บำนาญ (NPV) ${fmt(r.pensionPV)}</span><span><i style="background:var(--jade)"></i>ที่ทำงาน: PVD + เงินก้อน ${fmt(work)}</span><span><i style="background:var(--sea)"></i>สร้างเอง: เงินลงทุนปัจจุบัน ${fmt(r.inv)}</span>${!ok?`<span><i style="background:var(--bad)"></i>ส่วนที่ยังขาด ${fmt(r.gap)}</span>`:""}</div></div>
+    <div class="formula">
+      <div class="term a"><small>A. ทุนที่ควรมี</small><b>${fmt(r.need)}</b></div><span class="op-sign">−</span>
+      <div class="term b"><small>B. ทุนที่มีแล้ว</small><b>${fmt(r.have)}</b></div><span class="op-sign">=</span>
+      <div class="term g ${ok?"ok":""}"><small>${ok?"เกินเป้าหมาย":"Retirement Gap (ส่วนที่ต้องหาเพิ่ม)"}</small><b>${fmt(Math.abs(r.gap))}</b></div>
+    </div>
+    <div class="callout"><span>${ok?"ตามสมมติฐานนี้ เงินที่มีพอสำหรับเกษียณแล้ว":`ปิดส่วนที่ขาด: DCA เดือนละ (${r.M} เดือน ผลตอบแทน ${pct(r.reqRet)}/ปี ทบต้นรายปี)`}</span><b>${ok?"✓":fmt(r.pmt)+" บาท"}</b></div>
+  </div>`;
+}
+
+function renderInfo(){
+  if(!R) return;
+  $("infoMeta").textContent = `ตัวเลขเป็นบาท ณ วันเกษียณ (อายุ ${R.p.retAge} ปี) ยกเว้นที่ระบุ`;
+  const ok = R.gap<=0;
+  $("hero").innerHTML = `<div class="h-a"><small>A. ทุนที่ต้องมี</small><b>${fmt(R.need)}</b></div>
+    <div class="h-b"><small>B. ทุนที่มีแล้ว</small><b>${fmt(R.have)}</b></div>
+    <div class="h-g ${ok?"ok":""}"><small>${ok?"เกินเป้าหมาย":"ส่วนที่ขาด (A − B)"}</small><b>${fmt(Math.abs(R.gap))}</b></div>
+    <div class="h-s"><small>ลงทุนเพิ่ม/เดือน</small><b>${fmt(R.pmt)}</b></div>`;
+  $("pTimeline").innerHTML = timelinePage(R);
+  $("pSummary").innerHTML = summaryPage(R);
+  $("pEq").innerHTML = eqPage(R);
+}
+
+/* ---------- events ---------- */
+$("f").addEventListener("input", e => { if(e.target.dataset && e.target.dataset.money) fmtMoneyInput(e.target); if(e.target.closest("#tiers")) return; readForm(); save(); });
+$("f").addEventListener("submit", e => { e.preventDefault(); readForm(); showResults(); });
+document.querySelectorAll("input[name=mode]").forEach(r => r.addEventListener("change", () => { S.mode = $("modeFull").checked ? "full" : "simple"; save(); applyMode(); showResults(true); if(R && !$("info").hidden) renderInfo(); }));
+document.querySelectorAll("input[name=erMode]").forEach(r => r.addEventListener("change", () => { readForm(); save(); renderTiers(); }));
+$("calcBtn").addEventListener("click", () => { readForm(); save(); showResults(); $("results").scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth", block:"start"}); });
+$("reqRet").addEventListener("input", e => { S.reqRet = e.target.value; save(); showResults(); });
+$("infoBtn").addEventListener("click", () => { readForm(); showResults(); if($("err").textContent) return; $("info").hidden=false; renderInfo(); $("info").scrollIntoView({behavior:"smooth",block:"start"}); });
+$("resetBtn").addEventListener("click", () => { S = JSON.parse(JSON.stringify(DEF)); save(); loadForm(); showResults(true); });
+document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => {
+  document.querySelectorAll(".tabs button").forEach(x => x.setAttribute("aria-selected", x===b?"true":"false"));
+  document.querySelectorAll(".page").forEach(p => p.classList.toggle("on", p.id===b.dataset.p));
+}));
+document.addEventListener("keydown", e => { if(e.key==="Enter" && e.target.matches("#f input")){ e.preventDefault(); readForm(); save(); showResults(); } });
+matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", () => { if(!$("info").hidden) renderInfo(); });
+
+["startMonth","retMonth","workMonth"].forEach(id => {
+  $(id).innerHTML = TH_M.map((m,i)=>`<option value="${i+1}">${m}</option>`).join("");
+  $(id).addEventListener("change", () => { readForm(); save(); updateSvcHint(); });
+});
+loadForm(); showResults(true);
+if("serviceWorker" in navigator){ window.addEventListener("load", () => { navigator.serviceWorker.register("sw.js").catch(()=>{}); }); }
+</script>
+<script>
+{
+const PF_KEY='pvdPortV2';
+const BASE=[
+  {k:'bond',n:'ตราสารหนี้ไทย',r:[2,2,2],c:'#9fb4c9'},
+  {k:'re',n:'อสังหาทั่วโลก',r:[5.5,-10,-20],c:'#e0a77d'},
+  {k:'geq',n:'หุ้นทั่วโลก',r:[6.6,-10,-35],c:'#6f9fd8'},
+  {k:'teq',n:'หุ้นไทย',r:[5.3,-10,-40],c:'#3f6aa3'},
+  {k:'gold',n:'ทองคำ',r:[2,0,5],c:'#f0c75e'},
+  {k:'multi',n:'Multi assets',r:[6,-3,-10],c:'#5fb8a3'}];
+const EXTRA_C=['#b49be6','#e58fa3','#8fd0c2','#f2a07b','#9cc3ea','#c9a27e'];
+const EPS=1e-9;
+const RULES=[
+  {k:'re',t:'อสังหาไม่เกิน 25%',f:w=>w.re<=25+EPS,why:w=>`ตอนนี้ ${w.re.toLocaleString('th-TH',{maximumFractionDigits:2})}%`},
+  {k:'gold',t:'ทองคำไม่เกิน 12%',f:w=>w.gold<=12+EPS,why:w=>`ตอนนี้ ${w.gold.toLocaleString('th-TH',{maximumFractionDigits:2})}%`},
+  {k:'gr',t:'ทองคำ + อสังหา รวมไม่เกิน 25%',f:w=>w.gold+w.re<=25+EPS,why:w=>`ตอนนี้ ${(w.gold+w.re).toLocaleString('th-TH',{maximumFractionDigits:2})}%`},
+  {k:'multi',t:'Multi assets ใช้ร่วมกับหุ้นทั่วโลกหรืออสังหาไม่ได้',f:w=>!(w.multi>0&&(w.geq>0||w.re>0)),why:()=>'มีทั้งสองอย่างในพอร์ต'}];
+const fresh=()=>({assets:BASE.map(a=>({...a,r:a.r.slice(),w:0})),rules:{re:true,gold:true,gr:true,multi:true},usePort:true,seq:0});
+let PF=fresh();
+try{const d=JSON.parse(localStorage.getItem(PF_KEY));if(d&&Array.isArray(d.assets))PF=Object.assign(fresh(),d)}catch(e){}
+const pfSave=()=>{try{localStorage.setItem(PF_KEY,JSON.stringify(PF))}catch(e){}};
+const n2=v=>{const x=parseFloat(String(v).replace(/,/g,'').replace('−','-'));return isFinite(x)?x:0};
+const pc=v=>(v<-0.0049?'−':'')+Math.abs(v).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+'%';
+const pw=v=>v.toLocaleString('th-TH',{maximumFractionDigits:2})+'%';
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const LAB=['เฉลี่ย','ปีแย่','ปีวิกฤต'];
+let port={avg:0,bad:0,cri:0,valid:false,sum:0};
+
+function renderRows(){
+  $('atb').innerHTML=PF.assets.map((a,i)=>`<tr data-i="${i}">
+    <td><div class="nmw"><span class="sw" style="background:${a.c}"></span>${a.k?esc(a.n):`<input class="nmin" data-f="n" value="${esc(a.n)}" aria-label="ชื่อสินทรัพย์">`}</div></td>
+    <td class="c"><span class="pin w"><input data-f="w" inputmode="decimal" value="${a.w}" aria-label="สัดส่วน ${esc(a.n)}"><span>%</span></span></td>
+    ${a.r.map((v,j)=>`<td class="c"><span class="pin"><input data-f="r${j}" inputmode="decimal" value="${v}" class="${v<0?'neg':''}" aria-label="${esc(a.n)} ผลตอบแทน${LAB[j]}"><span>%</span></span></td>`).join('')}
+    <td class="x">${a.k?'':`<button type="button" class="del" data-del="${i}" aria-label="ลบ ${esc(a.n)}">×</button>`}</td></tr>`).join('');
+}
+function renderRules(){
+  $('rules').innerHTML='<h3 style="margin-bottom:2px">เงื่อนไขการจัดพอร์ต</h3>'+RULES.map(r=>`<label class="rule"><input type="checkbox" data-rule="${r.k}" ${PF.rules[r.k]!==false?'checked':''}><span>${r.t}</span><span class="st" id="st-${r.k}"></span></label>`).join('');
+}
+
+function calcPort(){
+  let sum=0;const res=[0,0,0],w={bond:0,re:0,geq:0,teq:0,gold:0,multi:0};
+  for(const a of PF.assets){const v=Math.max(0,n2(a.w));sum+=v;if(a.k)w[a.k]+=v;a.r.forEach((x,j)=>res[j]+=v*n2(x)/100)}
+  const sumOk=Math.abs(sum-100)<1e-6;
+  $('wsum').textContent=pw(sum);$('wsum').style.color=sumOk?'var(--good)':'var(--bad)';
+  $('wleft').textContent=sumOk?'ครบ 100%':sum<100?`ขาดอีก ${pw(100-sum)}`:`เกิน ${pw(sum-100)}`;
+  $('wleft').style.color=sumOk?'var(--good)':'var(--bad)';
+  const bad=[];
+  for(const r of RULES){const st=$('st-'+r.k);
+    if(PF.rules[r.k]===false){st.className='st off';st.textContent='ไม่ใช้';continue}
+    const ok=r.f(w);st.className='st '+(ok?'ok':'no');st.textContent=ok?'✓ ผ่าน':'ไม่ผ่าน · '+r.why(w);if(!ok)bad.push(r.t)}
+  const valid=sumOk&&!bad.length;
+  $('verdict').className='verdict '+(valid?'ok':'no');
+  $('verdict').textContent=valid?'พอร์ตนี้ผ่านเงื่อนไขทั้งหมด':'ยังไม่ผ่าน: '+[...(sumOk?[]:['สัดส่วนต้องรวมเป็น 100%']),...bad].join(' / ');
+  $('pAvg').textContent=pc(res[0]);$('pBad').textContent=pc(res[1]);$('pCri').textContent=pc(res[2]);
+  const live=PF.assets.filter(a=>n2(a.w)>0);
+  $('mix').innerHTML=live.map(a=>`<span style="width:${n2(a.w)/Math.max(sum,100)*100}%;background:${a.c}" title="${esc(a.n)} ${pw(n2(a.w))}"></span>`).join('');
+  $('mixl').innerHTML=live.map(a=>`<span><i class="sw" style="background:${a.c}"></i>${esc(a.n)} ${pw(n2(a.w))}</span>`).join('');
+  port={avg:res[0],bad:res[1],cri:res[2],valid,sumOk,sum};
+  syncPvd();
+}
+
+function syncPvd(){
+  const on=PF.usePort!==false,inp=$('rPvd'),hint=$('portHint');
+  $('usePort').checked=on;inp.readOnly=on;inp.closest('.inbox').classList.toggle('linked',on);
+  if(on){
+    const v=Math.round(port.avg*100)/100;
+    if(String(inp.value)!==String(v)||String(S.rPvd)!==String(v)){inp.value=v;S.rPvd=v;save();showResults(true)}
+    hint.className='portHint'+(port.valid?'':' no');
+    hint.textContent=port.valid?`ผลตอบแทนเฉลี่ยของพอร์ตในส่วนที่ 1 (ปีแย่ ${pc(port.bad)} · ปีวิกฤต ${pc(port.cri)})`:'พอร์ตในส่วนที่ 1 ยังไม่ครบ 100% หรือยังไม่ผ่านเงื่อนไข ค่านี้จึงยังใช้อ้างอิงไม่ได้';
+  }else{hint.className='portHint';hint.textContent='กรอกเอง ติ๊กช่องด้านบนเพื่อใช้ผลตอบแทนเฉลี่ยจากพอร์ต'}
+}
+
+$('atb').addEventListener('input',e=>{
+  const tr=e.target.closest('tr'),f=e.target.dataset.f;if(!tr||!f)return;
+  const a=PF.assets[+tr.dataset.i];
+  if(f==='n')a.n=e.target.value;else if(f==='w')a.w=e.target.value;else{const j=+f[1];a.r[j]=e.target.value;e.target.classList.toggle('neg',n2(e.target.value)<0)}
+  pfSave();calcPort();
+});
+$('atb').addEventListener('click',e=>{const d=e.target.dataset.del;if(d==null)return;PF.assets.splice(+d,1);pfSave();renderRows();calcPort()});
+$('rules').addEventListener('change',e=>{const k=e.target.dataset.rule;if(!k)return;PF.rules[k]=e.target.checked;pfSave();calcPort()});
+$('fillBond').onclick=()=>{
+  const b=PF.assets.find(a=>a.k==='bond');if(!b)return;
+  b.w=Math.max(0,Math.round((Math.max(0,n2(b.w))+100-port.sum)*100)/100);pfSave();renderRows();calcPort();
+};
+$('addAsset').onclick=()=>{
+  PF.seq=(PF.seq||0)+1;const extra=PF.assets.filter(a=>!a.k).length;
+  PF.assets.push({n:`สินทรัพย์ใหม่ ${PF.seq}`,r:[0,0,0],w:0,c:EXTRA_C[extra%EXTRA_C.length]});
+  pfSave();renderRows();calcPort();
+  const inp=$('atb').querySelector('tr:last-child .nmin');if(inp){inp.focus();inp.select()}
+};
+$('resetR').onclick=()=>{PF.assets.forEach(a=>{const b=BASE.find(x=>x.k&&x.k===a.k);if(b)a.r=b.r.slice()});pfSave();renderRows();calcPort()};
+$('clearW').onclick=()=>{PF.assets.forEach(a=>a.w=0);pfSave();renderRows();calcPort()};
+$('usePort').addEventListener('change',e=>{PF.usePort=e.target.checked;pfSave();calcPort()});
+$('goPvd').onclick=()=>{PF.usePort=true;pfSave();calcPort();$('rPvd').closest('.panel').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'})};
+const origReset=$('resetBtn');origReset.addEventListener('click',()=>calcPort());
+renderRows();renderRules();calcPort();
+}
+</script>
+
+</body>
+</html>
