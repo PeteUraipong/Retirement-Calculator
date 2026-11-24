@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#e2d9fb">
-<meta name="description" content="คำนวณเงินที่ต้องมีวันเกษียณ และเงินที่ควรออมต่อเดือน">
+<meta name="description" content="คำนวณเงินที่ต้องมีวันเกษียณ และเงินที่ควรลงทุนต่อเดือน">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -233,7 +233,7 @@ button{border-radius:999px!important}
 <body>
 <div class="wrap">
   <header>
-    <h1>วางแผนเกษียณ: ต้องมีเงินเท่าไร และต้องออมเดือนละเท่าไร</h1>
+    <h1>วางแผนเกษียณ: ต้องมีเงินเท่าไร และต้องลงทุนเดือนละเท่าไร</h1>
     <p class="lede">กรอกข้อมูลด้านบน (ทุกช่องแก้ได้) แล้วกด “คำนวณ” ผลจะแสดงด้านล่าง ตัวเลขที่กรอกไว้จะถูกจำไว้ในเบราว์เซอร์นี้ ค่าที่ใส่มาให้เป็นตัวอย่าง</p>
   </header>
 
@@ -281,7 +281,7 @@ button{border-radius:999px!important}
 
     <section class="panel">
       <h3>ผลตอบแทนที่คาด <span class="tag">ข้อ 15–17</span></h3>
-      <div class="field"><label for="rPre">15. ผลตอบแทนก่อนเกษียณ<small>ใช้กับเงินลงทุนปัจจุบันและเงินออมเพิ่ม</small></label><div class="inbox"><input id="rPre" type="number" step="0.1"><span class="u">%/ปี</span></div></div>
+      <div class="field"><label for="rPre">15. ผลตอบแทนก่อนเกษียณ<small>ใช้กับเงินลงทุนปัจจุบันและเงินลงทุนเพิ่ม</small></label><div class="inbox"><input id="rPre" type="number" step="0.1"><span class="u">%/ปี</span></div></div>
       <div class="field"><label for="rPvd">16. ผลตอบแทนกองทุนสำรองเลี้ยงชีพ</label><div class="inbox"><input id="rPvd" type="number" step="0.1"><span class="u">%/ปี</span></div></div>
       <div class="field"><label for="rPost">17. ผลตอบแทนหลังเกษียณ<small>ใช้คิดลดค่าใช้จ่ายและบำนาญด้วย</small></label><div class="inbox"><input id="rPost" type="number" step="0.1"><span class="u">%/ปี</span></div></div>
     </section>
@@ -320,7 +320,7 @@ button{border-radius:999px!important}
     <div class="row minus"><span class="n">+</span><div class="t">เงินก้อนที่ได้วันเกษียณ (ข้อ 19)<small>บำเหน็จ เงินชดเชย ฯลฯ</small></div><div class="v" id="r4b"></div></div>
     <div class="row gap" id="gapRow"><span class="n">5</span><div class="t" id="r5t">เงินที่ต้องการเพิ่ม<small>ข้อ 1 − (2 + 3 + 4 + เงินก้อน)</small></div><div class="v" id="r5"></div></div>
     <div class="row save"><span class="n">6</span><div class="t">เงินที่ควรลงทุนต่อเดือนเพื่อเติมส่วนที่ขาด<small id="r6s"></small></div><div class="v" id="r6"></div></div>
-    <div class="row"><span class="n">7</span><div class="t"><label for="reqRet">ผลตอบแทนที่ต้องการจากการลงทุน</label><small>เริ่มต้นเท่ากับข้อ 15 ลองปรับเพื่อดูเงินออมต่อเดือนที่เปลี่ยนไป</small></div><div class="inbox sm"><input id="reqRet" type="number" step="0.5"><span class="u">%</span></div></div>
+    <div class="row"><span class="n">7</span><div class="t"><label for="reqRet">ผลตอบแทนที่ต้องการจากการลงทุน</label><small>เริ่มต้นเท่ากับข้อ 15 ลองปรับเพื่อดูเงินลงทุนต่อเดือนที่เปลี่ยนไป</small></div><div class="inbox sm"><input id="reqRet" type="number" step="0.5"><span class="u">%</span></div></div>
   </section>
 
   <section class="info" id="info" hidden>
@@ -339,7 +339,7 @@ button{border-radius:999px!important}
     <div class="page" id="pEq"></div>
   </section>
 
-  <p class="note">วิธีคิด: ค่าใช้จ่ายหลังเกษียณปรับขึ้นตามเงินเฟ้อทุกปี คิดลดกลับมาที่วันเกษียณด้วยผลตอบแทนหลังเกษียณ (จ่ายต้นปี) • กองทุนสำรองฯ เงินลงทุนปัจจุบัน และเงินออมเพิ่ม (ผลข้อ 2, 3, 6) ใช้กติกาเดียวกัน: เงินเข้าทุกสิ้นเดือน ทบต้นทุกสิ้นปี (31 ธ.ค.) เงินที่มีตั้งแต่ต้นปีได้ผลตอบแทนเต็มปี เงินที่เข้าระหว่างปีได้ผลตอบแทนตามจำนวนเดือนที่เหลือของปี เริ่มเดือนในข้อ 6 ปีนี้ ถึงสิ้นเดือนในข้อ 7 ของปีที่เกษียณ • เงินเดือนขึ้นทุกสิ้นเดือนธันวาคม และไม่เกินเพดาน อัตราสมทบตามอายุงานปีที่กำลังทำ อายุงานคิดจากเดือน/ปีที่เข้าทำงาน (ข้อ 14) และเพิ่มทุกครบรอบเดือนที่เข้าทำงาน อัตราใหม่มีผลตั้งแต่เดือนครบรอบนั้น • บำนาญคิด NPV ด้วยผลตอบแทนหลังเกษียณ (ค่าเริ่มต้น 3%) ใช้เพื่อประกอบการวางแผนเท่านั้น ไม่ใช่คำแนะนำการลงทุน</p>
+  <p class="note">วิธีคิด: ค่าใช้จ่ายหลังเกษียณปรับขึ้นตามเงินเฟ้อทุกปี คิดลดกลับมาที่วันเกษียณด้วยผลตอบแทนหลังเกษียณ (จ่ายต้นปี) • กองทุนสำรองฯ เงินลงทุนปัจจุบัน และเงินลงทุนเพิ่ม (ผลข้อ 2, 3, 6) ใช้กติกาเดียวกัน: เงินเข้าทุกสิ้นเดือน ทบต้นทุกสิ้นปี (31 ธ.ค.) เงินที่มีตั้งแต่ต้นปีได้ผลตอบแทนเต็มปี เงินที่เข้าระหว่างปีได้ผลตอบแทนตามจำนวนเดือนที่เหลือของปี เริ่มเดือนในข้อ 6 ปีนี้ ถึงสิ้นเดือนในข้อ 7 ของปีที่เกษียณ • เงินเดือนขึ้นทุกสิ้นเดือนธันวาคม และไม่เกินเพดาน อัตราสมทบตามอายุงานปีที่กำลังทำ อายุงานคิดจากเดือน/ปีที่เข้าทำงาน (ข้อ 14) และเพิ่มทุกครบรอบเดือนที่เข้าทำงาน อัตราใหม่มีผลตั้งแต่เดือนครบรอบนั้น • บำนาญคิด NPV ด้วยผลตอบแทนหลังเกษียณ (ค่าเริ่มต้น 3%) ใช้เพื่อประกอบการวางแผนเท่านั้น ไม่ใช่คำแนะนำการลงทุน</p>
 </div>
 
 <script>
@@ -634,9 +634,9 @@ function chartSVG(r){
 
 function timelinePage(r){
   const ms = [];
-  ms.push({cls:"", age:r.p.age, title:"วันนี้", rows:[["กองทุนสำรองฯ", fmt(r.p.fund0)],["เงินลงทุน", fmt(r.p.invest0)],["อัตราสมทบนายจ้าง", pct(r.erStart*100)],["เริ่มออมเพิ่ม/เดือน", fmt(r.pmt)]]});
+  ms.push({cls:"", age:r.p.age, title:"วันนี้", rows:[["กองทุนสำรองฯ", fmt(r.p.fund0)],["เงินลงทุน", fmt(r.p.invest0)],["อัตราสมทบนายจ้าง", pct(r.erStart*100)],["เริ่มลงทุนเพิ่ม/เดือน", fmt(r.pmt)]]});
   r.tierChanges.forEach(tc => ms.push({cls:"", age:tc.age, title:"อัตราสมทบเพิ่มขึ้น", rows:[["อายุงานครบ", tc.svc+" ปี"],["มีผลเดือน", TH_M[tc.month-1]],["สมทบใหม่", pct(tc.rate*100)],["กองทุน ณ ตอนนั้น", fmt(r.pvdArr[tc.age-r.p.age]||0)]]}));
-  ms.push({cls:"ret", age:r.p.retAge, title:"วันเกษียณ", rows:[["ค่าใช้จ่าย/เดือน", fmt(r.mExpRet)],["ทุนที่ต้องมี", fmt(r.need)],["กองทุนสำรองฯ", fmt(r.pvd)],["เงินลงทุนเดิม", fmt(r.inv)],["เงินก้อน", fmt(r.lump)],["เงินออมเพิ่มสะสม", fmt(r.savArr[r.n])],["จ่ายรถ+บ้าน+รักษา", fmt(r.car+r.house+r.med)]]});
+  ms.push({cls:"ret", age:r.p.retAge, title:"วันเกษียณ", rows:[["ค่าใช้จ่าย/เดือน", fmt(r.mExpRet)],["ทุนที่ต้องมี", fmt(r.need)],["กองทุนสำรองฯ", fmt(r.pvd)],["เงินลงทุนเดิม", fmt(r.inv)],["เงินก้อน", fmt(r.lump)],["เงินลงทุนเพิ่มสะสม", fmt(r.savArr[r.n])],["จ่ายรถ+บ้าน+รักษา", fmt(r.car+r.house+r.med)]]});
   if(r.ty>0 && r.p.travelYears>0) ms.push({cls:"ret", age:Math.min(r.p.retAge+r.ty, r.p.lifeAge), title:"จบแผนท่องเที่ยว", rows:[["เที่ยวปีละ", fmt(r.travelYear)],["จำนวน", r.ty+" ปี"],["มูลค่า ณ วันเกษียณ", fmt(r.travelPV)]]});
   ms.push({cls:"end", age:r.p.lifeAge, title:"สิ้นสุดแผน", rows:[["ค่าใช้จ่าย/เดือน ปีสุดท้าย", fmt(r.mExpRet*Math.pow(1+r.p.inf/100,r.N-1))],["บำนาญ/เดือน", fmt(r.p.pension)],["เงินคงเหลือ", fmt(r.postArr[r.postArr.length-1])]]});
   ms.sort((a,b)=>a.age-b.age);
@@ -658,7 +658,7 @@ function timelinePage(r){
     <div class="miles">${cards}</div>
     <div><span class="eyebrow">เงินสะสมตามอายุ</span></div>
     <div class="chart">${chartSVG(r)}</div>
-    <div class="legend"><span><i style="background:var(--jade)"></i>กองทุนสำรองเลี้ยงชีพ</span><span><i style="background:var(--sea)"></i>เงินลงทุนปัจจุบัน</span><span><i style="background:var(--amber)"></i>เงินออมเพิ่ม ${fmt(r.pmt)} บาท/เดือน</span><span><i style="background:var(--plum)"></i>เงินคงเหลือหลังเกษียณ (หลังจ่ายเงินก้อน)</span></div>`;
+    <div class="legend"><span><i style="background:var(--jade)"></i>กองทุนสำรองเลี้ยงชีพ</span><span><i style="background:var(--sea)"></i>เงินลงทุนปัจจุบัน</span><span><i style="background:var(--amber)"></i>เงินลงทุนเพิ่ม ${fmt(r.pmt)} บาท/เดือน</span><span><i style="background:var(--plum)"></i>เงินคงเหลือหลังเกษียณ (หลังจ่ายเงินก้อน)</span></div>`;
 }
 
 function summaryPage(r){
@@ -686,7 +686,7 @@ function summaryPage(r){
         <div class="tot">B. ทุนที่มีแล้ว<b>${fmt(r.have)}</b></div></div>
       <div class="col g ${ok?"ok":""}"><div class="hd"><span class="k">5</span><h3>${ok?"เกินเป้าหมาย":"ส่วนที่ขาด"}<small>A − B</small></h3></div>
         <ul>${li("A. ทุนที่ต้องมี",fmt(r.need))}${li("− B. ทุนที่มีแล้ว",fmt(r.have),"op")}${li(ok?"เกิน":"ขาด",fmt(Math.abs(r.gap)))}${li("ผลตอบแทนที่ใช้",pct(r.reqRet))}</ul>
-        <div class="tot">ออมเพิ่ม/เดือน<b>${fmt(r.pmt)}</b></div></div>
+        <div class="tot">ลงทุนเพิ่ม/เดือน<b>${fmt(r.pmt)}</b></div></div>
     </div>`;
 }
 
@@ -719,7 +719,7 @@ function renderInfo(){
   $("hero").innerHTML = `<div class="h-a"><small>A. ทุนที่ต้องมี</small><b>${fmt(R.need)}</b></div>
     <div class="h-b"><small>B. ทุนที่มีแล้ว</small><b>${fmt(R.have)}</b></div>
     <div class="h-g ${ok?"ok":""}"><small>${ok?"เกินเป้าหมาย":"ส่วนที่ขาด (A − B)"}</small><b>${fmt(Math.abs(R.gap))}</b></div>
-    <div class="h-s"><small>ออมเพิ่ม/เดือน</small><b>${fmt(R.pmt)}</b></div>`;
+    <div class="h-s"><small>ลงทุนเพิ่ม/เดือน</small><b>${fmt(R.pmt)}</b></div>`;
   $("pTimeline").innerHTML = timelinePage(R);
   $("pSummary").innerHTML = summaryPage(R);
   $("pEq").innerHTML = eqPage(R);
